@@ -1,0 +1,3991 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/assets/manifest-BsqxAajc.json">
+    <meta name="theme-color" content="#1a2a6c"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Supermercado RPG">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/LDQs25ty/Photoroom-20250919-104355-2.png">
+
+    <title>Supermercado RPG Mobile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        html, body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: relative;
+        }
+        
+        .game-header {
+            background: transparent;
+            color: #fff;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            z-index: 10;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+        }
+        
+        .game-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .game-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .stat-icon {
+            width: 35px;
+            height: 35px;
+            object-fit: contain;
+        }
+        
+        .header-right-group {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .header-icon-button {
+            background: transparent;
+            border: none;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .header-icon-button img {
+            width: 100%;
+            height: 100%;
+            transition: transform 0.2s ease;
+        }
+
+        .header-icon-button:active img {
+            transform: scale(0.9);
+        }
+
+        #gameCanvas {
+            flex: 1;
+            width: 100%;
+            display: block;
+            background: #2c3e50;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 60px; /* Movido para cima */
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 0 30px;
+            z-index: 10;
+        }
+        
+        .joystick-container {
+            width: 150px;
+            height: 150px;
+            position: relative;
+        }
+        
+        .joystick-base {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.4);
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .joystick-stick {
+            width: 60%;
+            height: 60%;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            position: absolute;
+            transition: none;
+        }
+        
+        .action-buttons-group {
+            display: grid;
+            grid-template-columns: repeat(3, 80px);
+            gap: 15px;
+            justify-content: end;
+        }
+
+        .action-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .action-button img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.2s ease;
+            opacity: 0.9;
+        }
+
+        .action-button:active img {
+            transform: scale(0.9);
+        }
+
+        #actionButton, #buyButton {
+            display: none; /* Escondido por padrão */
+        }
+        
+        .message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #ffd700;
+            padding: 20px 40px;
+            border-radius: 40px;
+            font-size: 1.8rem;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+        
+        .message.show {
+            opacity: 1;
+        }
+        
+        .start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: white;
+            padding: 30px;
+        }
+        
+        .start-screen h1 {
+            font-size: 3rem;
+            margin-bottom: 30px;
+            color: #ffd700;
+        }
+        
+        .start-screen p {
+            margin-bottom: 40px;
+            text-align: center;
+            line-height: 1.6;
+            font-size: 1.4rem;
+        }
+        
+        .start-button {
+            padding: 20px 50px;
+            font-size: 1.8rem;
+            background: linear-gradient(145deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            margin-top: 15px;
+        }
+
+        .start-button.secondary {
+            background: linear-gradient(145deg, #f39c12, #e67e22);
+        }
+        
+        /* Estilos para o menu de compra (redesenhado) */
+        .buy-menu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 25, 47, 0.95);
+            backdrop-filter: blur(5px);
+            display: none;
+            flex-direction: column;
+            z-index: 50;
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 3px solid #ffd700;
+        }
+        
+        .buy-menu.active {
+            display: flex;
+        }
+        
+        .buy-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .buy-menu-title {
+            color: #ffd700;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .close-menu-button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .money-display {
+            color: #2ecc71;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            text-align: right;
+            padding-right: 10px;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .product-card {
+            background: #1d2b45;
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
+            border: 1px solid #2a4160;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            border-color: #ffd700;
+        }
+
+        .product-card.locked::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 12px;
+            z-index: 1;
+        }
+
+        .product-card.locked .lock-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #ffd700;
+            z-index: 2;
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .product-image {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 8px;
+            padding: 5px;
+        }
+        
+        .product-name {
+            color: #ecf0f1;
+            font-size: 1rem;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 5px;
+            height: 40px; /* Garante altura consistente */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .product-price {
+            color: #2ecc71;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .product-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        }
+        
+        .quantity-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        
+        .quantity-display {
+            color: white;
+            font-weight: bold;
+            min-width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        
+        .buy-product-button {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            flex-grow: 1;
+        }
+
+        .edit-price-button, .edit-name-button {
+            background: #f39c12;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 5px;
+        }
+        .edit-name-button {
+            background: #3498db;
+        }
+        
+        .buy-product-button:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+        }
+        
+        .shelves-section {
+            margin-top: 25px;
+        }
+        
+        .shelves-title {
+            color: #ffd700;
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+            text-align: left;
+            border-bottom: 2px solid #2a4160;
+            padding-bottom: 8px;
+        }
+        
+        .expansion-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .expansion-card {
+            background: #1d2b45;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid #2a4160;
+        }
+
+        .expansion-card:hover {
+            transform: translateY(-5px);
+            border-color: #f39c12;
+        }
+
+        .expansion-image {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        .expansion-info {
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            flex-grow: 1;
+        }
+
+        .expansion-name {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .expansion-price {
+            color: #2ecc71;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .buy-expansion-button {
+            background: #f39c12;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .buy-expansion-button:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+        }
+        
+        /* Estilos para o menu de definição de preço */
+        .price-menu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            z-index: 50;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        
+        .price-menu.active {
+            display: flex;
+        }
+        
+        .price-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .price-menu-title {
+            color: #ffd700;
+            font-size: 2.2rem;
+            font-weight: bold;
+        }
+        
+        .price-input-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .price-product-image {
+            width: 130px;
+            height: 130px;
+            object-fit: contain;
+            background: white;
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .price-product-name {
+            color: white;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .price-input-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .price-input {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            color: white;
+            font-size: 1.2rem;
+            width: 130px;
+            text-align: center;
+        }
+        
+        .price-label {
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .price-buttons {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .confirm-price-button {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        
+        .cancel-price-button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        /* Estilos para o Tutorial */
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            padding: 30px;
+        }
+
+        .tutorial-box {
+            background: #2c3e50;
+            color: white;
+            padding: 35px;
+            border-radius: 20px;
+            border: 3px solid #ffd700;
+            text-align: center;
+            max-width: 90%;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .tutorial-image-container {
+            margin-bottom: 20px;
+        }
+        
+        .tutorial-image {
+            width: 80px;
+            height: 80px;
+        }
+
+        .tutorial-box p {
+            font-size: 1.4rem;
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+
+        .tutorial-box button {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 15px 35px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Estilos para o Localizador */
+        .locator-arrow {
+            position: absolute;
+            font-size: 48px;
+            color: #ffd700;
+            z-index: 15;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            text-shadow: 0 0 8px rgba(0,0,0,0.7);
+        }
+        
+        /* Estilos para o menu de ajustes */
+        .settings-menu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            flex-direction: column;
+            z-index: 60; /* Acima de outros menus */
+            padding: 30px;
+            color: white;
+        }
+
+        .settings-menu.active {
+            display: flex;
+        }
+
+        .settings-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .settings-menu-title {
+            color: #ffd700;
+            font-size: 2.2rem;
+            font-weight: bold;
+        }
+        
+        .settings-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .row-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .row-selector label {
+            background: #34495e;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        
+        .row-selector input[type="radio"] {
+            display: none;
+        }
+        
+        .row-selector input[type="radio"]:checked + label {
+            background: #3498db;
+            box-shadow: 0 0 15px #3498db;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        #rowOffsetSlider {
+            width: 100%;
+        }
+
+        /* Estilos para a tela de início personalizada */
+        .game-container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+        }
+        
+        .game-cover {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 30px;
+        }
+        
+        .game-cover img {
+            max-width: 100%;
+            border-radius: 5px;
+            display: block;
+        }
+        
+        .game-buttons {
+            position: absolute;
+            bottom: 15%;
+            right: 10%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        
+        .game-button {
+            cursor: pointer;
+            transition: transform 0.2s, filter 0.2s;
+            border: none;
+            background: none;
+            padding: 0;
+            width: 180px;
+            height: auto;
+        }
+        
+        .game-button:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+        
+        .game-button:active {
+            transform: scale(0.98);
+        }
+        
+        .game-button img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-width: 300px;
+        }
+        
+        @media (max-width: 768px) {
+            .game-button {
+                width: 120px;
+            }
+            
+            .game-buttons {
+                bottom: 10%;
+                right: 5%;
+                gap: 10px;
+            }
+        }
+
+        /* Estilos para o Menu de Preços do Freezer */
+        .freezer-products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 25px;
+            width: 100%;
+            padding: 20px;
+        }
+
+        .freezer-product-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .freezer-product-image {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            background: white;
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .freezer-product-name {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .freezer-price-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+    </style>
+  <script type="module" crossorigin src="/assets/index-3qvUEDFc.js"></script>
+</head>
+<body>
+    <div class="game-header">
+        <div class="header-right-group">
+            <div class="game-stats" id="gameStats">
+                <div class="stat-item">
+                    <div class="stat-icon" style="background: #e74c3c; border-radius: 50%;"></div>
+                    <span id="playerStatus">Livre</span>
+                </div>
+                <div class="stat-item">
+                    <img class="stat-icon" src="https://i.ibb.co/ZzzVNLQ2/Photoroom-20250920-141511-1.png" alt="Pontuação">
+                    <span id="score">0</span>
+                </div>
+                <div class="stat-item">
+                    <img class="stat-icon" src="https://i.ibb.co/m5MbkMxJ/Photoroom-20250920-141511-3.png" alt="Dinheiro">
+                    <span id="money">R$ 200</span>
+                </div>
+            </div>
+            <button id="settingsButton" class="header-icon-button">
+                <img src="https://i.ibb.co/XxZtrwQn/Photoroom-20250920-141511-2.png" alt="Ajustes">
+            </button>
+        </div>
+    </div>
+    
+    <canvas id="gameCanvas"></canvas>
+    <div id="computerLocator" class="locator-arrow">▶</div>
+    
+    <div class="controls">
+        <div class="joystick-container">
+            <div class="joystick-base">
+                <div class="joystick-stick" id="joystickStick"></div>
+            </div>
+        </div>
+        <div class="action-buttons-group">
+            <button class="action-button" id="actionButton" title="Interagir"><img src="https://i.ibb.co/DHk739Hf/Photoroom-20250919-104355-3.png" alt="Ação"></button>
+            <button class="action-button" id="buyButton" title="Comprar Produtos"><img src="https://i.ibb.co/LDQs25ty/Photoroom-20250919-104355-2.png" alt="Comprar"></button>
+            <button class="action-button" id="toggleMarketButton" title="Abrir/Fechar Mercado"><img id="toggleMarketButtonImage" src="https://i.ibb.co/wZjkdpHX/Photoroom-20250919-104355-4.png" alt="Abrir/Fechar"></button>
+        </div>
+    </div>
+    
+    <div id="message" class="message"></div>
+    
+    <div class="start-screen" id="startScreen">
+        <div class="game-container">
+            <div class="game-cover">
+                <img src="https://z-cdn-media.chatglm.cn/files/09a8cb5b-7c5f-4271-9e63-d6a5ee11060c_Generated%20Image%20October%2007%2C%202025%20-%202_24PM.png?auth_key=1791394823-a9c6ef47457e4dd7ab8fc0203e5d69b9-0-9ddd8f0fbd325a699003feaba6577922" alt="Capa do Jogo">
+                
+                <div class="game-buttons">
+                    <button class="game-button" id="continue-button">
+                        <img src="https://z-cdn-media.chatglm.cn/files/4ded9ec1-8d87-446f-8bd0-bf4b80c95cc2_IMG_20251007_143331.png?auth_key=1791394823-e147468b14fc4330b1298f250a6fafbc-0-b207c0afc4bf6007a0f23ef00e419fae" alt="Continuar Jogo">
+                    </button>
+                    
+                    <button class="game-button" id="new-game-button">
+                        <img src="https://z-cdn-media.chatglm.cn/files/466b0d09-f98d-4b6b-801e-f7d0d571f22a_IMG_20251007_143216.png?auth_key=1791394823-095936b543384290abf15ef33a2821c9-0-bce4afda889830b9db194c832bf2c20b" alt="Novo Jogo">
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="buy-menu" id="buyMenu">
+        <div class="buy-menu-header">
+            <div class="buy-menu-title">Área de Compras</div>
+            <button class="close-menu-button" id="closeMenuButton">X</button>
+        </div>
+        <div class="money-display" id="menuMoneyDisplay">Dinheiro: R$ 200</div>
+        
+        <div class="shelves-section">
+            <div class="shelves-title">Gerenciar Estoque</div>
+            <div class="products-grid" id="purchasedProductsGrid">
+                <!-- Produtos comprados serão adicionados aqui -->
+            </div>
+        </div>
+
+        <div class="shelves-section">
+            <div class="shelves-title">Comprar Novos Produtos</div>
+            <div class="products-grid" id="productsGrid">
+                <!-- Os produtos serão adicionados dinamicamente via JavaScript -->
+            </div>
+        </div>
+        
+        <div class="shelves-section">
+            <div class="shelves-title">Expandir Supermercado</div>
+            <div class="expansion-grid">
+                <div class="expansion-card">
+                    <img src="https://z-cdn-media.chatglm.cn/files/144404e6-625a-4496-946b-c40e5ec72147_1000674418-removebg-preview.png?auth_key=1789670997-de8954e92d4940f8a6b1adee229713a5-0-4b1e4e9d42a2ad064890ad57ef4f1db3" alt="Prateleira Normal" class="expansion-image">
+                    <div class="expansion-info">
+                        <span class="expansion-name">Nova Prateleira</span>
+                        <span class="expansion-price">R$ 150</span>
+                    </div>
+                    <button class="buy-expansion-button" id="buyShelfButton">Comprar</button>
+                </div>
+                <div class="expansion-card">
+                    <img src="https://i.ibb.co/YTQng1RJ/Photoroom-20250922-230045-14.png" alt="Prateleira de Limpeza" class="expansion-image">
+                    <div class="expansion-info">
+                        <span class="expansion-name">Prateleira de Limpeza</span>
+                        <span class="expansion-price">R$ 200</span>
+                    </div>
+                    <button class="buy-expansion-button" id="buySpecialShelfButton">Comprar</button>
+                </div>
+                <div class="expansion-card">
+                    <img src="https://i.ibb.co/1Yb5NSJ0/Photoroom-20251020-212425-2.png" alt="Freezer de Bebidas" class="expansion-image">
+                    <div class="expansion-info">
+                        <span class="expansion-name">Freezer de Bebidas</span>
+                        <span class="expansion-price">R$ 300</span>
+                    </div>
+                    <button class="buy-expansion-button" id="buyFreezerButton">Comprar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="shelves-section">
+            <div class="shelves-title">Contratar Pessoal</div>
+            <div class="expansion-grid">
+                <div class="expansion-card">
+                     <img src="https://i.ibb.co/dJXVVdYR/Photoroom-20250918-171705-3.png" alt="Funcionário" class="expansion-image">
+                    <div class="expansion-info">
+                        <span class="expansion-name">Contratar Funcionário</span>
+                        <span class="expansion-price">R$ 200</span>
+                    </div>
+                    <button class="buy-expansion-button" id="hireBotButton">Contratar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Menu para definir preço dos produtos -->
+    <div class="price-menu" id="priceMenu">
+        <div class="price-menu-header">
+            <div class="price-menu-title">Definir Preço de Venda</div>
+            <button class="close-menu-button" id="closePriceMenuButton">X</button>
+        </div>
+        
+        <div class="price-input-container">
+            <img id="priceProductImage" class="price-product-image" src="" alt="Produto">
+            <div id="priceProductName" class="price-product-name">Nome do Produto</div>
+            
+            <div id="suggestedPriceDisplay" class="price-label" style="margin-bottom: 20px; color: #2ecc71;"></div>
+
+            <div class="price-input-group">
+                <label class="price-label">Preço de Venda:</label>
+                <input type="number" id="priceInput" class="price-input" min="0.01" step="0.01" value="0.00">
+                <label class="price-label">R$</label>
+            </div>
+            
+            <div class="price-buttons">
+                <button id="confirmPriceButton" class="confirm-price-button">Confirmar</button>
+                <button id="cancelPriceButton" class="cancel-price-button">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="tutorial-overlay" id="tutorialOverlay">
+        <div class="tutorial-box">
+            <div class="tutorial-image-container" id="tutorialImageContainer">
+                <img id="tutorialImage" class="tutorial-image" src="" alt="Ícone do Tutorial">
+            </div>
+            <p id="tutorialText"></p>
+            <button id="closeTutorialButton">Entendi!</button>
+        </div>
+    </div>
+
+    <!-- Menu de Ajustes -->
+    <div class="settings-menu" id="settingsMenu">
+        <div class="settings-menu-header">
+            <div class="settings-menu-title">Ajustes de Prateleira</div>
+            <button class="close-menu-button" id="closeSettingsMenuButton">X</button>
+        </div>
+        <div class="settings-content">
+            <p>Selecione a linha para ajustar:</p>
+            <div id="rowSelector" class="row-selector">
+                <!-- Rádios gerados via JS -->
+            </div>
+            <p>Ajuste Vertical (Y)</p>
+            <div class="slider-container">
+                <span>Baixo</span>
+                <input type="range" min="-50" max="50" value="0" class="slider" id="rowOffsetSlider">
+                <span>Cima</span>
+            </div>
+            <div id="sliderValue">Valor: 0</div>
+
+            <div id="sizeAdjustmentContainer" style="display: none; width: 100%; text-align: center; margin-top: 20px;">
+                <p>Ajuste de Tamanho (Prateleira Especial)</p>
+                <div class="slider-container">
+                    <span>Largura</span>
+                    <input type="range" min="225" max="600" value="450" class="slider" id="shelfWidthSlider">
+                </div>
+                <div id="widthSliderValue">Largura: 450</div>
+                <div class="slider-container">
+                    <span>Altura</span>
+                    <input type="range" min="300" max="500" value="300" class="slider" id="shelfHeightSlider">
+                </div>
+                <div id="heightSliderValue">Altura: 300</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Menu de Preços do Freezer -->
+    <div class="price-menu" id="freezerPriceMenu">
+        <div class="price-menu-header">
+            <div class="price-menu-title">Preços do Freezer</div>
+            <button class="close-menu-button" id="closeFreezerPriceMenuButton">X</button>
+        </div>
+        <div class="freezer-products-grid" id="freezerProductsGrid">
+            <!-- Os produtos serão gerados pelo JS aqui -->
+        </div>
+        <div class="price-buttons" style="justify-content: center; margin-top: 20px;">
+            <button id="confirmFreezerPricesButton" class="confirm-price-button">Confirmar e Fechar</button>
+        </div>
+    </div>
+
+
+    <div class="notification" id="notification"></div>
+    
+    <script>
+        // Função para ativar o modo tela cheia
+        function enterFullscreen() {
+            const elem = document.documentElement;
+            
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(err => {
+                    console.error('Erro ao entrar em tela cheia:', err);
+                });
+            } else if (elem.webkitRequestFullscreen) { /* Safari */
+                elem.webkitRequestFullscreen().catch(err => {
+                    console.error('Erro ao entrar em tela cheia:', err);
+                });
+            } else if (elem.msRequestFullscreen) { /* IE11 */
+                elem.msRequestFullscreen().catch(err => {
+                    console.error('Erro ao entrar em tela cheia:', err);
+                });
+            }
+            
+            // Rolagem para o topo para esconder a barra de endereço
+            window.scrollTo(0, 0);
+        }
+        
+        // Verifica se o navegador está em tela cheia
+        function isFullscreen() {
+            return (
+                document.fullscreenElement ||
+                document.webkitFullscreenElement ||
+                document.mozFullScreenElement ||
+                document.msFullscreenElement
+            );
+        }
+        
+        // Elementos do DOM
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const joystickStick = document.getElementById('joystickStick');
+        const actionButton = document.getElementById('actionButton');
+        const buyButton = document.getElementById('buyButton');
+        const toggleMarketButton = document.getElementById('toggleMarketButton');
+        const toggleMarketButtonImage = document.getElementById('toggleMarketButtonImage');
+        const playerStatusEl = document.getElementById('playerStatus');
+        const scoreEl = document.getElementById('score');
+        const moneyEl = document.getElementById('money');
+        const messageEl = document.getElementById('message');
+        const startScreen = document.getElementById('startScreen');
+        const continueButton = document.getElementById('continue-button');
+        const newGameButton = document.getElementById('new-game-button');
+        const buyMenu = document.getElementById('buyMenu');
+        const closeMenuButton = document.getElementById('closeMenuButton');
+        const menuMoneyDisplay = document.getElementById('menuMoneyDisplay');
+        const productsGrid = document.getElementById('productsGrid');
+        const purchasedProductsGrid = document.getElementById('purchasedProductsGrid');
+        const buyShelfButton = document.getElementById('buyShelfButton');
+        const buySpecialShelfButton = document.getElementById('buySpecialShelfButton');
+        const hireBotButton = document.getElementById('hireBotButton');
+        const computerLocator = document.getElementById('computerLocator');
+        const gameStats = document.getElementById('gameStats');
+        const notification = document.getElementById('notification');
+        
+        // Elementos do menu de preço
+        const priceMenu = document.getElementById('priceMenu');
+        const closePriceMenuButton = document.getElementById('closePriceMenuButton');
+        const priceProductImage = document.getElementById('priceProductImage');
+        const priceProductName = document.getElementById('priceProductName');
+        const suggestedPriceDisplay = document.getElementById('suggestedPriceDisplay');
+        const priceInput = document.getElementById('priceInput');
+        const confirmPriceButton = document.getElementById('confirmPriceButton');
+        const cancelPriceButton = document.getElementById('cancelPriceButton');
+
+        // Elementos do Tutorial
+        const tutorialOverlay = document.getElementById('tutorialOverlay');
+        const tutorialText = document.getElementById('tutorialText');
+        const closeTutorialButton = document.getElementById('closeTutorialButton');
+        const tutorialImageContainer = document.getElementById('tutorialImageContainer');
+        const tutorialImage = document.getElementById('tutorialImage');
+
+        // Elementos do menu de Ajustes
+        const settingsButton = document.getElementById('settingsButton');
+        const settingsMenu = document.getElementById('settingsMenu');
+        const closeSettingsMenuButton = document.getElementById('closeSettingsMenuButton');
+        const rowSelector = document.getElementById('rowSelector');
+        const rowOffsetSlider = document.getElementById('rowOffsetSlider');
+        const sliderValue = document.getElementById('sliderValue');
+        const sizeAdjustmentContainer = document.getElementById('sizeAdjustmentContainer');
+        const shelfWidthSlider = document.getElementById('shelfWidthSlider');
+        const shelfHeightSlider = document.getElementById('shelfHeightSlider');
+        const widthSliderValue = document.getElementById('widthSliderValue');
+        const heightSliderValue = document.getElementById('heightSliderValue');
+
+        // Elementos do menu do Freezer
+        const buyFreezerButton = document.getElementById('buyFreezerButton');
+        const freezerPriceMenu = document.getElementById('freezerPriceMenu');
+        const closeFreezerPriceMenuButton = document.getElementById('closeFreezerPriceMenuButton');
+        const freezerProductsGrid = document.getElementById('freezerProductsGrid');
+        const confirmFreezerPricesButton = document.getElementById('confirmFreezerPricesButton');
+        
+        // Cores e Imagens
+        const COLORS = { WHITE: '#ffffff', BLACK: '#000000', BROWN: '#8B4513', GREEN: '#2ecc71', RED: '#e74c3c', BLUE: '#3498db', YELLOW: '#f1c40f', GRAY: '#7f8c8d', DARK_GRAY: '#34495e', GOLD: '#ffd700', PURPLE: '#9b59b6', LIGHT_BROWN: '#d2b48c' };
+        const MARKET_CLOSE_IMG = 'https://i.ibb.co/wZjkdpHX/Photoroom-20250919-104355-4.png';
+        const MARKET_OPEN_IMG = 'https://i.ibb.co/C5P8VdG5/Photoroom-20250919-104355-1.png';
+        const ACTION_BUTTON_IMG = 'https://i.ibb.co/DHk739Hf/Photoroom-20250919-104355-3.png';
+        const BUY_BUTTON_IMG = 'https://i.ibb.co/LDQs25ty/Photoroom-20250919-104355-2.png';
+
+
+        // Configurações do jogo - AUMENTADAS
+        const GAME_CONFIG = { 
+            FPS: 60, 
+            PLAYER_SPEED: 4.5, 
+            SHELF_WIDTH: 225, 
+            SHELF_HEIGHT: 300, 
+            PLAYER_SIZE: 45, 
+            COUNTER_WIDTH: 200, 
+            COUNTER_HEIGHT: 135, 
+            CUSTOMER_SIZE: 45, 
+            CUSTOMER_SPEED: 2.25, 
+            CUSTOMER_SPAWN_RATE: 8000, 
+            ANIMATION_SPEED: 200, 
+            DOOR_ANIMATION_SPEED: 1000, 
+            PRODUCTS_PER_ROW: 5, 
+            PRODUCTS_PER_COL: 5, // Aumentado para 5 linhas
+            SHELF_PRICE: 150, 
+            CAMERA_SPEED: 0.3, 
+            WORLD_WIDTH: 1800, 
+            WORLD_HEIGHT: 1800, 
+            BOX_WIDTH: 50, 
+            BOX_HEIGHT: 35.5, 
+            BOX_SPACING: 20, 
+            BAG_SIZE: 12.5,
+            FLOOR_TILE_SIZE: 300,
+            BOT_HIRE_COST: 200,
+            GAME_SCALE: 1.5, // Fator de zoom
+            FREEZER_PRICE: 300,
+            FREEZER_INCOME_RATE: 3500, // Renda a cada 3.5 segundos
+        };
+        
+        // Constantes para a prateleira especial
+        const SPECIAL_SHELF_PRICE = 200; // Preço da prateleira especial
+        
+        // Lista de produtos
+        const PRODUCT_TYPES = [
+          {
+            "id": 1,
+            "name": "Dreher Ginger",
+            "image": "https://z-cdn-media.chatglm.cn/files/c945a3f5-5db9-4e52-a66f-df97c2fafb0f_1000674472-removebg-preview.png?auth_key=1789676309-32d730baffd64dc8a7e8fb97ffd7aed0-0-45b4e6c941bd2867a176124f638e6dac",
+            "price": 15.6,
+            "salePrice": 25.99,
+            "suggestedPrice": 25.99,
+            "width": 54,
+            "height": 86,
+            "requiredScore": 0
+          },
+          {
+            "id": 2,
+            "name": "Cheetos",
+            "image": "https://i.ibb.co/1Nm9P8n/9429b2efbb5435f4c5df6228444a6add-7.png",
+            "price": 4.5,
+            "salePrice": 7.49,
+            "suggestedPrice": 7.49,
+            "width": 60,
+            "height": 65,
+            "requiredScore": 0
+          },
+          {
+            "id": 3,
+            "name": "Doritos",
+            "image": "https://i.ibb.co/6QH8LVw/9429b2efbb5435f4c5df6228444a6add-6-1.png",
+            "price": 5.4,
+            "salePrice": 8.99,
+            "suggestedPrice": 8.99,
+            "width": 60,
+            "height": 80,
+            "requiredScore": 0
+          },
+          {
+            "id": 4,
+            "name": "Óleo Soya",
+            "image": "https://i.ibb.co/sdG4z9bF/9429b2efbb5435f4c5df6228444a6add-4.png",
+            "price": 3,
+            "salePrice": 4.99,
+            "suggestedPrice": 4.99,
+            "width": 63,
+            "height": 78,
+            "requiredScore": 0
+          },
+          {
+            "id": 5,
+            "name": "Feijão Carioca",
+            "image": "https://i.ibb.co/cS7C1b0P/9429b2efbb5435f4c5df6228444a6add-5.png",
+            "price": 5.1,
+            "salePrice": 8.5,
+            "suggestedPrice": 8.5,
+            "width": 60,
+            "height": 80,
+            "requiredScore": 0
+          },
+          {
+            "id": 6,
+            "name": "Café Pilão",
+            "image": "https://i.ibb.co/qLsVmcsr/9429b2efbb5435f4c5df6228444a6add-2.png",
+            "price": 9.6,
+            "salePrice": 15.99,
+            "suggestedPrice": 15.99,
+            "width": 50,
+            "height": 70,
+            "requiredScore": 0
+          },
+          {
+            "id": 7,
+            "name": "Açúcar União",
+            "image": "https://i.ibb.co/FbNkfMrL/9429b2efbb5435f4c5df6228444a6add-3.png",
+            "price": 3.6,
+            "salePrice": 5.99,
+            "suggestedPrice": 5.99,
+            "width": 60,
+            "height": 80,
+            "requiredScore": 0
+          },
+          {
+            "id": 8,
+            "name": "Flocão Maratá",
+            "image": "https://i.ibb.co/0R8WyWNC/9429b2efbb5435f4c5df6228444a6add-1.png",
+            "price": 2.4,
+            "salePrice": 3.99,
+            "suggestedPrice": 3.99,
+            "width": 60,
+            "height": 80,
+            "requiredScore": 0
+          },
+          {
+            "id": 9,
+            "name": "Heineken",
+            "image": "https://i.ibb.co/sp5ThgLJ/Photoroom-20250920-010543-1.png",
+            "price": 30.5,
+            "salePrice": 45.99,
+            "suggestedPrice": 45.99,
+            "width": 70,
+            "height": 90,
+            "requiredScore": 500
+          },
+          {
+            "id": 10,
+            "name": "ovos",
+            "image": "https://i.ibb.co/hFCqPpLL/Photoroom-20250920-010544-9.png",
+            "price": 11.8,
+            "salePrice": 17.99,
+            "suggestedPrice": 17.99,
+            "width": 90,
+            "height": 81,
+            "requiredScore": 500
+          },
+          {
+            "id": 11,
+            "name": "Pitu",
+            "image": "https://i.ibb.co/WNxSjJzx/Photoroom-20250920-010543-2.png",
+            "price": 8.2,
+            "salePrice": 12.49,
+            "suggestedPrice": 12.49,
+            "width": 44,
+            "height": 95,
+            "requiredScore": 500
+          },
+          {
+            "id": 12,
+            "name": "coca",
+            "image": "https://i.ibb.co/YHJ9PN2/Photoroom-20250920-010543-3.png",
+            "price": 6.5,
+            "salePrice": 8.99,
+            "suggestedPrice": 8.99,
+            "width": 39,
+            "height": 95,
+            "requiredScore": 1000
+          },
+          {
+            "id": 13,
+            "name": "sprit",
+            "image": "https://i.ibb.co/201G4Wbk/Photoroom-20250920-010543-4.png",
+            "price": 3.1,
+            "salePrice": 4.99,
+            "suggestedPrice": 4.99,
+            "width": 37,
+            "height": 86,
+            "requiredScore": 1000
+          },
+          {
+            "id": 14,
+            "name": "guarana 2L",
+            "image": "https://i.ibb.co/LzchfSRb/Photoroom-20250920-010543-5.png",
+            "price": 5.8,
+            "salePrice": 9.99,
+            "suggestedPrice": 9.99,
+            "width": 43,
+            "height": 85,
+            "requiredScore": 1000
+          },
+          {
+            "id": 15,
+            "name": "Pitu lata",
+            "image": "https://i.ibb.co/sJHFdyBm/Photoroom-20250920-010543-7.png",
+            "price": 2.9,
+            "salePrice": 4.49,
+            "suggestedPrice": 4.49,
+            "width": 26,
+            "height": 33,
+            "requiredScore": 1500
+          },
+          {
+            "id": 16,
+            "name": "nesquik",
+            "image": "https://i.ibb.co/7tqMPkDq/Photoroom-20250920-010543-8.png",
+            "price": 12.7,
+            "salePrice": 16.29,
+            "suggestedPrice": 16.29,
+            "width": 25,
+            "height": 30,
+            "requiredScore": 1500
+          },
+          {
+            "id": 17,
+            "name": "Fanta",
+            "image": "https://i.ibb.co/4gMm9Fht/Photoroom-20250920-010543-6.png",
+            "price": 7.9,
+            "salePrice": 11.99,
+            "suggestedPrice": 11.99,
+            "width": 40,
+            "height": 69,
+            "requiredScore": 1500
+          },
+          {
+            "id": 18,
+            "name": "creme craque",
+            "image": "https://i.ibb.co/1wQbvDC/Photoroom-20250920-010544-10.png",
+            "price": 8.5,
+            "salePrice": 9.99,
+            "suggestedPrice": 9.99,
+            "width": 64,
+            "height": 62,
+            "requiredScore": 2000
+          },
+          {
+            "id": 19,
+            "name": "Nescal",
+            "image": "https://i.ibb.co/nqvHfg2S/Photoroom-20250920-010544-15.png",
+            "price": 4.8,
+            "salePrice": 6.99,
+            "suggestedPrice": 6.99,
+            "width": 34,
+            "height": 40,
+            "requiredScore": 2000
+          },
+          {
+            "id": 20,
+            "name": "leite ninho pacote",
+            "image": "https://i.ibb.co/JjPdzHTm/Photoroom-20250920-010544-14.png",
+            "price": 11.2,
+            "salePrice": 20.49,
+            "suggestedPrice": 20.49,
+            "width": 39,
+            "height": 36,
+            "requiredScore": 2000
+          },
+          {
+            "id": 21,
+            "name": "tode",
+            "image": "https://i.ibb.co/bMR8PrvH/Photoroom-20250920-010544-16.png",
+            "price": 3.1,
+            "salePrice": 6.29,
+            "suggestedPrice": 6.29,
+            "width": 36,
+            "height": 53,
+            "requiredScore": 2500
+          },
+          {
+            "id": 22,
+            "name": "feijao verde",
+            "image": "https://i.ibb.co/k28bts2Q/Photoroom-20250920-010544-17.png",
+            "price": 2.5,
+            "salePrice": 4.99,
+            "suggestedPrice": 4.99,
+            "width": 54,
+            "height": 70,
+            "requiredScore": 2500
+          },
+          {
+            "id": 23,
+            "name": "feijão preto",
+            "image": "https://i.ibb.co/kCGswVL/Photoroom-20250920-010544-18.png",
+            "price": 4.9,
+            "salePrice": 7.99,
+            "suggestedPrice": 7.99,
+            "width": 54,
+            "height": 80,
+            "requiredScore": 2500
+          },
+          {
+            "id": 24,
+            "name": "paozinho",
+            "image": "https://i.ibb.co/dwg9cTgV/Photoroom-20250920-010544-12.png",
+            "price": 5.3,
+            "salePrice": 8.49,
+            "suggestedPrice": 8.49,
+            "width": 57,
+            "height": 80,
+            "requiredScore": 2500
+          },
+          {
+            "id": 25,
+            "name": "pigles",
+            "image": "https://i.ibb.co/1YVvqKM1/Photoroom-20250920-010544-13.png",
+            "price": 8.8,
+            "salePrice": 12.49,
+            "suggestedPrice": 12.49,
+            "width": 35,
+            "height": 90,
+            "requiredScore": 2500
+          },
+          {
+            "id": 27,
+            "name": "bom bril",
+            "image": "https://i.ibb.co/NdWv6qwv/Photoroom-20250922-230045-13.png",
+            "price": 35,
+            "salePrice": 49.99,
+            "suggestedPrice": 49.99,
+            "width": 63,
+            "height": 56,
+            "requiredScore": 3000
+          },
+          {
+            "id": 28,
+            "name": "OMO",
+            "image": "https://i.ibb.co/RGbTWcT0/Photoroom-20250922-230045-12.png",
+            "price": 65,
+            "salePrice": 89.99,
+            "suggestedPrice": 89.99,
+            "width": 64,
+            "height": 65,
+            "requiredScore": 3000
+          },
+          {
+            "id": 29,
+            "name": "PAPEL TOALHA",
+            "image": "https://i.ibb.co/fdG1L0v1/Photoroom-20250922-230045-11.png",
+            "price": 42,
+            "salePrice": 59.99,
+            "suggestedPrice": 59.99,
+            "width": 95,
+            "height": 74,
+            "requiredScore": 3000
+          },
+          {
+            "id": 30,
+            "name": "PAPEL HIGIENICO",
+            "image": "https://i.ibb.co/RG3gwd10/Photoroom-20250922-230045-8.png",
+            "price": 85,
+            "salePrice": 119.99,
+            "suggestedPrice": 119.99,
+            "width": 86,
+            "height": 88,
+            "requiredScore": 3000
+          },
+          {
+            "id": 31,
+            "name": "leite NAN",
+            "image": "https://i.ibb.co/7xWZK1S9/Photoroom-20250922-230045-10.png",
+            "price": 55,
+            "salePrice": 79.99,
+            "suggestedPrice": 79.99,
+            "width": 45,
+            "height": 66,
+            "requiredScore": 3000
+          },
+          {
+            "id": 32,
+            "name": "papel higienico PANDA",
+            "image": "https://i.ibb.co/LD1hRL3B/Photoroom-20250922-230045-9.png",
+            "price": 48,
+            "salePrice": 69.99,
+            "suggestedPrice": 69.99,
+            "width": 105,
+            "height": 90,
+            "requiredScore": 3000
+          },
+          {
+            "id": 33,
+            "name": "SABAO EM PÓ",
+            "image": "https://i.ibb.co/20D7JKz4/Photoroom-20250922-230045-6.png",
+            "price": 52,
+            "salePrice": 74.99,
+            "suggestedPrice": 74.99,
+            "width": 43,
+            "height": 60,
+            "requiredScore": 3000
+          },
+          {
+            "id": 34,
+            "name": "Licor Cointreau",
+            "image": "https://i.ibb.co/2RDLxyz/Photoroom-20250922-230045-5.png",
+            "price": 38,
+            "salePrice": 54.99,
+            "suggestedPrice": 54.99,
+            "width": 29,
+            "height": 86,
+            "requiredScore": 3000
+          },
+          {
+            "id": 35,
+            "name": "Vinho Branco",
+            "image": "https://i.ibb.co/LhvmXJw3/Photoroom-20250922-230045-4.png",
+            "price": 32,
+            "salePrice": 45.99,
+            "suggestedPrice": 45.99,
+            "width": 55,
+            "height": 101,
+            "requiredScore": 3000
+          },
+          {
+            "id": 36,
+            "name": "Espumante Chandon",
+            "image": "https://i.ibb.co/cczd1wNr/Photoroom-20250922-230045-3.png",
+            "price": 45,
+            "salePrice": 64.99,
+            "suggestedPrice": 64.99,
+            "width": 20,
+            "height": 59,
+            "requiredScore": 3000
+          },
+          {
+            "id": 37,
+            "name": "Cerveja Corona",
+            "image": "https://i.ibb.co/KxkPmBBJ/Photoroom-20250922-230044-1.png",
+            "price": 15,
+            "salePrice": 21.99,
+            "suggestedPrice": 21.99,
+            "width": 33,
+            "height": 56,
+            "requiredScore": 3000
+          },
+          {
+            "id": 38,
+            "name": "Cerveja Budweiser",
+            "image": "https://i.ibb.co/wFkcTxF3/Photoroom-20250922-230045-2.png",
+            "price": 22,
+            "salePrice": 31.99,
+            "suggestedPrice": 31.99,
+            "width": 60,
+            "height": 85,
+            "requiredScore": 3000
+          }
+        ];
+
+        const FREEZER_PRODUCT_TYPES = [
+            { id: 'water', name: 'Água', image: 'https://i.ibb.co/6yVzYjb/agua.png', salePrice: 2.00 },
+            { id: 'energy_drink', name: 'Energético', image: 'https://i.ibb.co/f2kSp3Q/energetico.png', salePrice: 7.00 },
+            { id: 'soda', name: 'Refrigerante', image: 'https://i.ibb.co/YHJ9PN2/Photoroom-20250920-010543-3.png', salePrice: 5.00 },
+            { id: 'beer', name: 'Cerveja', image: 'https://i.ibb.co/sp5ThgLJ/Photoroom-20250920-010543-1.png', salePrice: 4.00 }
+        ];
+        
+        // Variáveis do jogo
+        let player, bot = null, shelves = [], freezers = [], counter, customers = [], paymentQueue = [], door, computerArea;
+        let gameRunning = false, score = 0, money = 200, botHired = false;
+        let lastTime = 0, customerSpawnTimer = 0;
+        let joystickActive = false, joystickVector = { x: 0, y: 0 };
+        let allowCustomerSpawn = false;
+        let camera = { x: 0, y: 0 };
+        let selectedProduct = null, selectedQuantity = 1;
+        let productBoxes = [];
+        let draggingShelf = null;
+        let imagesLoaded = 0, totalImages = 0;
+        let currentPricingProduct = null;
+        let isMarketOpen = true;
+        let isDraggingShelf = false;
+        let tutorialState = {};
+
+        // Variáveis de Ajustes
+        let isSettingsMode = false;
+        let editingShelf = null;
+        let selectedShelfRow = 0;
+        let editingFreezer = null;
+
+        const shelfImage = new Image();
+        const specialShelfImage = new Image(); // Imagem para a prateleira especial
+        const freezerImage = new Image(); // Imagem para o freezer
+        const productImages = {};
+        const freezerProductImages = {};
+        const bagImage = new Image();
+        const floorImage = new Image(); // Imagem do piso xadrez
+        const counterImage = new Image(); // Imagem do balcão
+        const computerAreaImage = new Image();
+        
+        const CUSTOMER_SPRITES = [
+            ['https://i.ibb.co/3YdRsK4H/Photoroom-20250918-171705-1.png', 'https://i.ibb.co/rKK6TqRt/Photoroom-20250918-171705-2.png'],
+            ['https://i.ibb.co/dJXVVdYR/Photoroom-20250918-171705-3.png', 'https://i.ibb.co/CpHmCnMY/Photoroom-20250918-171705-4.png'],
+            ['https://i.ibb.co/XZqGRbhM/Photoroom-20250918-171706-5.png', 'https://i.ibb.co/k2GR4jXd/Photoroom-20250918-171706-6.png'],
+            ['https://i.ibb.co/qMBkQWpy/Photoroom-20250918-171706-7.png', 'https://i.ibb.co/N6GV9k0W/Photoroom-20250918-171706-8.png'],
+            ['https://i.ibb.co/chTBTJVC/Photoroom-20250918-171706-9.png', 'https://i.ibb.co/0V1vvfMF/Photoroom-20250918-171706-10.png']
+        ];
+        const customerImages = [];
+
+        function getProductTypeById(id) { 
+            return PRODUCT_TYPES.find(p => p.id === id); 
+        }
+        
+        function loadImage(img, src) { 
+            totalImages++; 
+            img.onload = () => { 
+                imagesLoaded++; 
+                if (imagesLoaded === totalImages) {
+                    console.log("Todas as imagens carregadas");
+                }
+            }; 
+            img.onerror = () => { 
+                console.error("Erro ao carregar imagem:", src); 
+                imagesLoaded++; 
+                if (imagesLoaded === totalImages) {
+                    console.log("Todas as imagens carregadas (com erros)");
+                }
+            }; 
+            img.src = src; 
+        }
+        
+        function initImages() {
+            loadImage(shelfImage, 'https://z-cdn-media.chatglm.cn/files/144404e6-625a-4496-946b-c40e5ec72147_1000674418-removebg-preview.png?auth_key=1789670997-de8954e92d4940f8a6b1adee229713a5-0-4b1e4e9d42a2ad064890ad57ef4f1db3');
+            loadImage(specialShelfImage, 'https://i.ibb.co/YTQng1RJ/Photoroom-20250922-230045-14.png'); // Imagem da prateleira especial
+            loadImage(freezerImage, 'https://i.ibb.co/1Yb5NSJ0/Photoroom-20251020-212425-2.png');
+            loadImage(bagImage, 'https://i.ibb.co/7yLp0h2/bag.png');
+            
+            // Carregar imagem do piso xadrez
+            loadImage(floorImage, 'https://i.ibb.co/gLhSnMKX/0f05fed398d328f38a3b71cb6188835f.jpg');
+            
+            // Carregar imagem do balcão
+            loadImage(counterImage, 'https://z-cdn-media.chatglm.cn/files/5b3e3d88-1a78-4d15-ae38-f8eb085e6177_1000674826-removebg-preview.png?auth_key=1789707003-fae403e8f8ac44c6ad165494e1bb4b09-0-0ef98634459e6a33b37396bed646d0b1');
+            loadImage(computerAreaImage, 'https://i.ibb.co/TDzhqrPD/download-2-4-1-1.png');
+            
+            PRODUCT_TYPES.forEach(product => { 
+                productImages[product.id] = new Image(); 
+                loadImage(productImages[product.id], product.image); 
+            });
+
+            FREEZER_PRODUCT_TYPES.forEach(product => {
+                freezerProductImages[product.id] = new Image();
+                loadImage(freezerProductImages[product.id], product.image);
+            });
+
+            CUSTOMER_SPRITES.forEach(spritePair => {
+                const frames = [new Image(), new Image()];
+                loadImage(frames[0], spritePair[0]);
+                loadImage(frames[1], spritePair[1]);
+                customerImages.push(frames);
+            });
+        }
+        
+        class Player {
+            constructor() {
+                this.spriteSheet = new Image();
+                this.spriteSheet.src = "https://i.ibb.co/gZtfG5pd/10006781472-ezgif-com-gif-to-sprite-converter.png";
+
+                // Dimensões de UM quadro na sua spritesheet
+                this.frameWidth  = 143;
+                this.frameHeight = 283;
+
+                // Descobrir total de frames pela altura real da imagem
+                this.totalFrames = 1; // provisório até carregar
+                this.spriteSheet.onload = () => {
+                  const framesByHeight = Math.floor(this.spriteSheet.naturalHeight / this.frameHeight);
+                  // Garante pelo menos 1 quadro
+                  this.totalFrames = Math.max(1, framesByHeight);
+                };
+
+                this.drawScale = 0.4; 
+                this.size = 45;
+
+                this.currentFrame = 0;     // 0 = idle
+                this.frameTimer = 0;
+                this.frameInterval = 80;   // ms entre frames de caminhada
+                this.isMoving = false;
+
+                this.x = GAME_CONFIG.WORLD_WIDTH / 2;
+                this.y = GAME_CONFIG.WORLD_HEIGHT / 2;
+                this.speed = GAME_CONFIG.PLAYER_SPEED;
+                this.direction = 'right';
+
+                this.carrying = false;
+                this.product = null;
+                this.box = null;
+            }
+
+            update(deltaTime) {
+                if (this.isMoving) {
+                    this.frameTimer += deltaTime;
+                    if (this.frameTimer >= this.frameInterval) {
+                        this.frameTimer %= this.frameInterval;
+
+                        // Se só temos 1 quadro, fica no idle
+                        if (this.totalFrames <= 1) {
+                            this.currentFrame = 10;
+                            return;
+                        }
+
+                        // Ciclo de caminhada usa frames 1..(totalFrames-1)
+                        const walkStart = 1;
+                        const walkCount = this.totalFrames - walkStart; // quantidade de frames de caminhada
+                        // Avança dentro do ciclo de 1..N-1
+                        const curInCycle = (this.currentFrame < walkStart ? 0 : this.currentFrame - walkStart);
+                        const nextInCycle = (curInCycle + 1) % walkCount;
+
+                        this.currentFrame = walkStart + nextInCycle;
+                    }
+                } else {
+                    // Parado = sempre idle 0
+                    this.currentFrame = 2;
+                    this.frameTimer = 0; // opcional: reseta o timer
+                }
+            }
+            
+            move(dx, dy) {
+                this.isMoving = (dx !== 0 || dy !== 0);
+                if (!this.isMoving) return;
+
+                if (dx < 0) this.direction = 'left';
+                else if (dx > 0) this.direction = 'right';
+
+                this.x += dx * this.speed;
+                this.y += dy * this.speed;
+
+                const scaledWidth = this.frameWidth * this.drawScale;
+                const scaledHeight = this.frameHeight * this.drawScale;
+
+                this.x = Math.max(scaledWidth / 2, Math.min(this.x, GAME_CONFIG.WORLD_WIDTH - scaledWidth / 2));
+                this.y = Math.max(scaledHeight / 2, Math.min(this.y, GAME_CONFIG.WORLD_HEIGHT - scaledHeight / 2));
+            }
+            
+            draw() { 
+                // Segurança extra: se por qualquer motivo o índice estourar, clampeia
+                if (this.currentFrame >= this.totalFrames) this.currentFrame = 0;
+                if (this.currentFrame < 0) this.currentFrame = 0;
+
+                ctx.save();
+                ctx.translate(this.x - camera.x, this.y - camera.y);
+
+                const scaledWidth = this.frameWidth * this.drawScale;
+                const scaledHeight = this.frameHeight * this.drawScale;
+
+                // Draw player sprite
+                ctx.save();
+                if (this.direction === 'left') {
+                    ctx.scale(-1, 1);
+                }
+                
+                if (this.spriteSheet.complete && this.spriteSheet.naturalWidth > 0) {
+                    const sx = 0;
+                    const sy = this.currentFrame * this.frameHeight;
+
+                    // Mais uma guarda: garante que sy+frameHeight não passa da altura da imagem
+                    const maxSy = this.spriteSheet.naturalHeight - this.frameHeight;
+                    const safeSy = Math.max(0, Math.min(sy, maxSy));
+
+                    ctx.drawImage(
+                        this.spriteSheet,
+                        sx, safeSy,
+                        this.frameWidth, this.frameHeight,
+                        -scaledWidth / 2, -scaledHeight / 2,
+                        scaledWidth, scaledHeight
+                    );
+                } else { 
+                    // Fallback visual
+                    ctx.fillStyle = "red";
+                    ctx.fillRect(-scaledWidth / 2, -scaledHeight / 2, scaledWidth, scaledHeight);
+                } 
+                ctx.restore();
+                
+                // Draw carried box/product
+                if (this.box) {
+                    const box = this.box;
+                    const relX = 0;
+                    const relY = -scaledHeight / 2 - box.height / 2 - -80; // Position above player's head
+
+                    ctx.fillStyle = COLORS.BROWN;
+                    ctx.fillRect(relX - box.width / 2, relY - box.height / 2, box.width, box.height);
+                    ctx.strokeStyle = COLORS.BLACK;
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(relX - box.width / 2, relY - box.height / 2, box.width, box.height);
+                    ctx.fillStyle = COLORS.WHITE;
+                    ctx.font = 'bold 15px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(box.productType.name, relX, relY - 8);
+                    ctx.fillText(`${box.quantity}/${box.maxQuantity}`, relX, relY + 15);
+                } 
+                else if (this.product) { 
+                    const carriedProductSize = 60;
+                    this.product.draw(0, -scaledHeight / 2 - 30, carriedProductSize, carriedProductSize);
+                } 
+                
+                ctx.restore(); 
+            }
+            
+            pickProduct(product) { 
+                if (!this.carrying && !this.box) { 
+                    this.carrying = true; 
+                    this.product = product; 
+                    updatePlayerStatus("Carregando produto"); 
+                    return true; 
+                } 
+                return false; 
+            }
+            
+            dropProduct() { 
+                if (this.carrying && this.product) { 
+                    this.carrying = false; 
+                    const product = this.product; 
+                    this.product = null; 
+                    updatePlayerStatus("Livre"); 
+                    return product; 
+                } 
+                return null; 
+            }
+            
+            pickBox(box) { 
+                if (!this.carrying && !this.product) { 
+                    this.carrying = true; 
+                    this.box = box; 
+                    updatePlayerStatus("Carregando caixa"); 
+                    return true; 
+                } 
+                return false; 
+            }
+            
+            dropBox() { 
+                if (this.carrying && this.box) { 
+                    this.carrying = false; 
+                    const box = this.box; 
+                    this.box = null; 
+                    updatePlayerStatus("Livre"); 
+                    return box; 
+                } 
+                return null; 
+            }
+        }
+        
+        class Product {
+            constructor(type) { 
+                this.type = type; 
+                this.value = Math.floor(type.salePrice / 5); 
+            }
+            
+            draw(x, y, slotWidth, slotHeight) { 
+                const img = productImages[this.type.id]?.complete ? productImages[this.type.id] : null; 
+                if (img) {
+                    const w = slotWidth * (this.type.width / 100);
+                    const h = slotHeight * (this.type.height / 100);
+                    ctx.drawImage(img, x - w / 2, y - h / 2, w, h);
+                } else { 
+                    ctx.fillStyle = COLORS.GREEN;
+                    const w = slotWidth * (this.type.width / 100);
+                    const h = slotHeight * (this.type.height / 100);
+                    ctx.fillRect(x - w/2, y - h/2, w, h); 
+                } 
+            }
+        }
+        
+        class Shelf {
+            constructor(x, y, isSpecial = false) { 
+                this.x = x; 
+                this.y = y; 
+                this.width = GAME_CONFIG.SHELF_WIDTH; 
+                this.height = GAME_CONFIG.SHELF_HEIGHT; 
+                const productsPerRow = isSpecial ? GAME_CONFIG.PRODUCTS_PER_ROW * 2 : GAME_CONFIG.PRODUCTS_PER_ROW;
+                this.maxProducts = productsPerRow * GAME_CONFIG.PRODUCTS_PER_COL; 
+                this.products = new Array(this.maxProducts).fill(null);
+                this.isSpecial = isSpecial;
+                this.rowOffsets = new Array(GAME_CONFIG.PRODUCTS_PER_COL).fill(0);
+                this.rowProductType = new Array(GAME_CONFIG.PRODUCTS_PER_COL).fill(null);
+            }
+            
+            addProduct(product) { 
+                const emptySlotIndex = this.products.indexOf(null);
+                if (emptySlotIndex !== -1) { 
+                    this.products[emptySlotIndex] = product; 
+                    return true; 
+                } 
+                return false; 
+            }
+            
+            removeProduct() { 
+                for (let i = this.products.length - 1; i >= 0; i--) {
+                    if (this.products[i]) {
+                        const product = this.products[i];
+                        this.products[i] = null;
+                        return product;
+                    }
+                }
+                return null; 
+            }
+            
+            draw() { 
+                const img = this.isSpecial ? (specialShelfImage.complete ? specialShelfImage : null) : (shelfImage.complete ? shelfImage : null);
+
+                if (img) 
+                    ctx.drawImage(img, this.x - camera.x, this.y - camera.y, this.width, this.height); 
+                else { 
+                    ctx.fillStyle = COLORS.BROWN; 
+                    ctx.fillRect(this.x - camera.x, this.y - camera.y, this.width, this.height); 
+                } 
+                
+                const paddingX = 22.5;
+                const paddingTop = 30;
+                const paddingBottom = 67.5; // Reduzido para aproximar da linha 5
+                const startX = this.x + paddingX;
+                const startY = this.y + paddingTop;
+                const availableWidth = this.width - (paddingX * 2);
+                const availableHeight = this.height - paddingTop - paddingBottom;
+                const productsPerRow = this.isSpecial ? GAME_CONFIG.PRODUCTS_PER_ROW * 2 : GAME_CONFIG.PRODUCTS_PER_ROW;
+                const slotWidth = availableWidth / productsPerRow;
+                const baseSlotHeight = availableHeight / GAME_CONFIG.PRODUCTS_PER_COL;
+
+                this.products.forEach((p, i) => { 
+                    if (p) {
+                        const row = Math.floor(i / productsPerRow);
+                        const col = i % productsPerRow;
+                        const x = startX + col * slotWidth + slotWidth / 2;
+                        const y = startY + (row * baseSlotHeight) + (baseSlotHeight / 2) + this.rowOffsets[row];
+                        p.draw(x - camera.x, y - camera.y, slotWidth, baseSlotHeight);
+                    }
+                });
+                
+                if (isSettingsMode && editingShelf === this) {
+                    ctx.save();
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'middle';
+                    ctx.font = 'bold 16px Arial';
+
+                    for (let row = 0; row < GAME_CONFIG.PRODUCTS_PER_COL; row++) {
+                        const lineY = startY + (row * baseSlotHeight) + (baseSlotHeight / 2) + this.rowOffsets[row] - camera.y;
+                        
+                        // Sombra para a linha
+                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
+                        ctx.lineWidth = 6;
+                        ctx.beginPath();
+                        ctx.moveTo(this.x - camera.x, lineY);
+                        ctx.lineTo(this.x + this.width - camera.x, lineY);
+                        ctx.stroke();
+
+                        if (row === selectedShelfRow) {
+                            // Linha selecionada
+                            ctx.strokeStyle = '#00ffff'; // Ciano Brilhante
+                            ctx.lineWidth = 4;
+                        } else {
+                            // Linha Padrão
+                            ctx.strokeStyle = '#ffffff'; // Branco
+                            ctx.lineWidth = 2;
+                        }
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(this.x - camera.x, lineY);
+                        ctx.lineTo(this.x + this.width - camera.x, lineY);
+                        ctx.stroke();
+
+                        // Adiciona um texto para clareza
+                        const text = `Linha ${row + 1}`;
+                        const textX = this.x - camera.x - ctx.measureText(text).width - 10;
+                        
+                        // Sombra do texto
+                        ctx.fillStyle = 'black';
+                        ctx.fillText(text, textX + 1, lineY + 1);
+                        
+                        // Cor do texto
+                        ctx.fillStyle = (row === selectedShelfRow) ? '#00ffff' : '#ffffff';
+                        ctx.fillText(text, textX, lineY);
+                    }
+                    ctx.restore();
+                }
+            }
+            
+            checkCollision(player) { 
+                const closestX = Math.max(this.x, Math.min(player.x, this.x + this.width));
+                const closestY = Math.max(this.y, Math.min(player.y, this.y + this.height));
+                const distanceX = player.x - closestX;
+                const distanceY = player.y - closestY;
+                const distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+                return distanceSquared < (player.size * player.size);
+            }
+            
+            hasSpace() { 
+                return this.products.some(p => p === null); 
+            }
+            
+            hasProducts() { 
+                return this.products.some(p => p !== null); 
+            }
+        }
+
+        class Freezer {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 225;
+                this.height = 150;
+                this.products = JSON.parse(JSON.stringify(FREEZER_PRODUCT_TYPES)); // Deep copy to store prices per freezer
+                this.incomeTimer = 0;
+                this.lastIncome = 0;
+                this.showIncomeTimer = 0;
+            }
+
+            update(deltaTime) {
+                if (!isMarketOpen) return;
+                this.incomeTimer += deltaTime;
+                if(this.showIncomeTimer > 0) this.showIncomeTimer -= deltaTime;
+
+                if (this.incomeTimer >= GAME_CONFIG.FREEZER_INCOME_RATE) {
+                    this.incomeTimer %= GAME_CONFIG.FREEZER_INCOME_RATE;
+                    // Simula a venda de um produto aleatório
+                    const soldProduct = this.products[Math.floor(Math.random() * this.products.length)];
+                    const income = soldProduct.salePrice;
+                    money += income;
+                    this.lastIncome = income;
+                    this.showIncomeTimer = 2000; // Mostra por 2 segundos
+                    updateUI();
+                }
+            }
+
+            draw() {
+                const img = freezerImage.complete ? freezerImage : null;
+                if (img) {
+                    ctx.drawImage(img, this.x - camera.x, this.y - camera.y, this.width, this.height);
+                } else {
+                    ctx.fillStyle = COLORS.BLUE;
+                    ctx.fillRect(this.x - camera.x, this.y - camera.y, this.width, this.height);
+                }
+                
+                // Animação de renda
+                if (this.showIncomeTimer > 0) {
+                    ctx.save();
+                    ctx.fillStyle = COLORS.GREEN;
+                    ctx.font = 'bold 24px Arial';
+                    ctx.textAlign = 'center';
+                    const text = `+R$${this.lastIncome.toFixed(2)}`;
+                    const yOffset = (2000 - this.showIncomeTimer) / 100; // Move para cima com o tempo
+                    ctx.globalAlpha = this.showIncomeTimer / 2000;
+                    ctx.fillText(text, this.x + this.width / 2 - camera.x, this.y - yOffset - camera.y);
+                    ctx.restore();
+                }
+            }
+
+            checkCollision(player) {
+                const closestX = Math.max(this.x, Math.min(player.x, this.x + this.width));
+                const closestY = Math.max(this.y, Math.min(player.y, this.y + this.height));
+                const distanceX = player.x - closestX;
+                const distanceY = player.y - closestY;
+                const distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+                return distanceSquared < (player.size * player.size);
+            }
+        }
+        
+        class ProductBox {
+            constructor(x, y, productType, quantity) { 
+                this.x = x; 
+                this.y = y; 
+                this.width = GAME_CONFIG.BOX_WIDTH; 
+                this.height = GAME_CONFIG.BOX_HEIGHT; 
+                this.productType = productType; 
+                this.quantity = quantity; 
+                this.maxQuantity = 10;
+                this.needsPriceSet = true;
+            }
+            
+            takeProduct() { 
+                if (this.quantity > 0) { 
+                    this.quantity--; 
+                    return new Product(this.productType); 
+                } 
+                return null; 
+            }
+            
+            draw() { 
+                ctx.fillStyle = COLORS.BROWN; 
+                ctx.fillRect(this.x - camera.x, this.y - camera.y, this.width, this.height); 
+                ctx.strokeStyle = COLORS.BLACK; 
+                ctx.lineWidth = 3; 
+                ctx.strokeRect(this.x - camera.x, this.y - camera.y, this.width, this.height); 
+                ctx.fillStyle = COLORS.WHITE; 
+                ctx.font = 'bold 15px Arial'; 
+                ctx.textAlign = 'center'; 
+                ctx.fillText(this.productType.name, this.x + this.width/2 - camera.x, this.y + this.height/2 - 8 - camera.y); 
+                ctx.fillText(`${this.quantity}/${this.maxQuantity}`, this.x + this.width/2 - camera.x, this.y + this.height/2 + 15 - camera.y); 
+            }
+            
+            checkCollision(entity) { 
+                const closestX = Math.max(this.x, Math.min(entity.x, this.x + this.width));
+                const closestY = Math.max(this.y, Math.min(entity.y, this.y + this.height));
+                const distanceX = entity.x - closestX;
+                const distanceY = entity.y - closestY;
+                const distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+                return distanceSquared < (entity.size * entity.size);
+            }
+            
+            hasProducts() { 
+                return this.quantity > 0; 
+            }
+            
+            isEmpty() {
+                return this.quantity === 0;
+            }
+        }
+        
+        class Counter {
+            constructor() { 
+                this.x = GAME_CONFIG.WORLD_WIDTH / 2 - GAME_CONFIG.COUNTER_WIDTH / 2; // Centralizado
+                this.y = 45; 
+                this.width = GAME_CONFIG.COUNTER_WIDTH; 
+                this.height = GAME_CONFIG.COUNTER_HEIGHT; 
+            }
+            
+            draw() { 
+                const img = counterImage.complete ? counterImage : null;
+                if (img) {
+                    ctx.drawImage(img, this.x - camera.x, this.y - camera.y, this.width, this.height);
+                } else {
+                    ctx.fillStyle = COLORS.GRAY;
+                    ctx.fillRect(this.x - camera.x, this.y - camera.y, this.width, this.height);
+                    ctx.strokeStyle = COLORS.BLACK;
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(this.x - camera.x, this.y - camera.y, this.width, this.height);
+                }
+                ctx.fillStyle = COLORS.WHITE;
+                ctx.font = 'bold 10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('CAIXA', this.x + this.width/2 - camera.x, this.y + this.height + 22 - camera.y);
+            }
+            
+            checkCollision(player) { 
+                const closestX = Math.max(this.x, Math.min(player.x, this.x + this.width));
+                const closestY = Math.max(this.y, Math.min(player.y, this.y + this.height));
+                const distanceX = player.x - closestX;
+                const distanceY = player.y - closestY;
+                const distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+                return distanceSquared < (player.size * player.size);
+            }
+        }
+        
+        class Customer {
+            constructor() {
+                this.size = GAME_CONFIG.CUSTOMER_SIZE;
+                this.x = door.x + door.width / 2;
+                this.y = door.y + door.height / 2;
+                this.speed = GAME_CONFIG.CUSTOMER_SPEED * (0.8 + Math.random() * 0.4);
+                this.state = 'entering';
+                this.productsInBag = [];
+                this.shoppingList = this.createShoppingList();
+                this.currentItemToGet = null;
+                this.patience = 30000 + Math.random() * 20000;
+                this.comment = null;
+                this.commentTimer = 0;
+                this.shoppingTimer = 0;
+                this.wanderTimer = 0;
+                this.hasPaid = false;
+                this.targetShelf = null;
+                this.wanderTarget = null;
+                this.spriteSetIndex = Math.floor(Math.random() * CUSTOMER_SPRITES.length);
+                this.animationFrame = 0;
+                this.animationTimer = 0;
+                this.direction = 'right';
+                this.targetPosition = null;
+                this.stuckTimer = 0;
+            }
+
+            createShoppingList() {
+                const list = [];
+                const numItems = Math.floor(Math.random() * 3) + 1; // 1 a 3 itens
+                const availableProducts = [...PRODUCT_TYPES];
+
+                for (let i = 0; i < numItems && availableProducts.length > 0; i++) {
+                    const productIndex = Math.floor(Math.random() * availableProducts.length);
+                    const productType = availableProducts.splice(productIndex, 1)[0];
+                    if (!list.some(item => item.type.id === productType.id)) {
+                        list.push({ type: productType, needed: 1, collected: 0 });
+                    }
+                }
+                return list;
+            }
+
+            update(deltaTime) {
+                const initialX = this.x;
+                const initialY = this.y;
+
+                if (this.commentTimer > 0) {
+                    this.commentTimer -= deltaTime;
+                }
+
+                // --- State Machine Logic (calculates movement) ---
+                switch (this.state) {
+                    case 'entering':
+                        if (shelves.some(s => s.hasProducts()) && this.shoppingList.length > 0) {
+                            this.state = 'browsing';
+                        } else {
+                            this.state = 'leaving';
+                        }
+                        break;
+
+                    case 'browsing':
+                        this.patience -= deltaTime;
+                        const nextItem = this.shoppingList.find(item => item.collected < item.needed);
+
+                        if (!nextItem) { // Shopping list complete
+                            if (this.productsInBag.length > 0) {
+                                this.state = 'queueing';
+                                paymentQueue.push(this);
+                            } else {
+                                this.comment = "😞 Não achei nada que queria.";
+                                this.commentTimer = 4000;
+                                this.state = 'leaving';
+                            }
+                            break;
+                        }
+
+                        const shelvesWithProduct = shelves.filter(shelf =>
+                            shelf.products.some(p => p && p.type.id === nextItem.type.id)
+                        );
+
+                        if (shelvesWithProduct.length > 0) {
+                            this.targetShelf = shelvesWithProduct[Math.floor(Math.random() * shelvesWithProduct.length)];
+                            this.targetPosition = {
+                                x: this.targetShelf.x + this.targetShelf.width / 2,
+                                y: this.targetShelf.y + this.targetShelf.height + this.size * 1.5
+                            };
+                            this.currentItemToGet = nextItem;
+                            this.state = 'movingToShelf';
+                        } else {
+                            this.wander();
+                            if (this.patience <= 0) {
+                                if (this.productsInBag.length > 0) {
+                                    this.state = 'queueing';
+                                    paymentQueue.push(this);
+                                } else {
+                                    this.comment = `😠 Não encontrei ${nextItem.type.name}...`;
+                                    this.commentTimer = 4000;
+                                    this.state = 'leaving';
+                                }
+                            }
+                        }
+                        break;
+
+                    case 'movingToShelf':
+                        if (this.moveTo(this.targetPosition.x, this.targetPosition.y)) {
+                            this.state = 'shopping';
+                            this.shoppingTimer = 0;
+                        }
+                        break;
+
+                    case 'shopping':
+                        this.shoppingTimer += deltaTime;
+                        const productToTake = this.targetShelf?.products.find(p => p && p.type.id === this.currentItemToGet.type.id);
+                        if (!productToTake) { // Product might have been taken by another customer
+                            this.state = 'browsing';
+                            break;
+                        }
+                        const price = productToTake.type.salePrice;
+                        const suggested = productToTake.type.suggestedPrice;
+                        // A venda demora mais se o preço for maior que o sugerido
+                        const saleDelay = price > suggested ? Math.max(0, (price / suggested - 1) * 4000) : 0;
+
+                        if (this.shoppingTimer > 1500 + saleDelay) {
+                            if (this.currentItemToGet && this.targetShelf) {
+                                const productToTakeIndex = this.targetShelf.products.findIndex(p => p && p.type.id === this.currentItemToGet.type.id);
+                                if (productToTakeIndex !== -1) {
+                                    // Preço ok, pega o produto
+                                    this.targetShelf.products[productToTakeIndex] = null;
+                                    this.productsInBag.push(productToTake);
+                                    this.currentItemToGet.collected++;
+                                    this.comment = `Peguei ${this.currentItemToGet.type.name}!`;
+                                    this.commentTimer = 3000;
+                                }
+                            }
+                            this.state = 'browsing';
+                        }
+                        break;
+
+                    case 'queueing':
+                        const queuePos = paymentQueue.indexOf(this);
+                        if (queuePos === -1) {
+                            this.state = 'leaving';
+                            break;
+                        }
+                        const targetX = counter.x + counter.width / 2 + (Math.random() - 0.5) * 30;
+                        const targetY = counter.y + counter.height + 15 + (queuePos * (this.size * 1.5));
+                        if (this.moveTo(targetX, targetY)) {
+                            if (paymentQueue[0] === this) {
+                                let totalValue = 0;
+                                this.productsInBag.forEach(p => totalValue += p.type.salePrice);
+                                
+                                let priceComment = totalValue > 40 ? "Nossa, que caro! 💸" : totalValue < 15 ? "Que pechincha! 😄" : "Preço justo. 👍";
+                                this.comment = `Bom dia! ${priceComment}`;
+                                this.commentTimer = 4000;
+
+                                this.state = 'paying';
+                                this.shoppingTimer = 0;
+                            }
+                        }
+                        break;
+
+                    case 'paying':
+                        this.shoppingTimer += deltaTime;
+                        if (this.shoppingTimer > 2000) {
+                            paymentQueue.shift();
+                            if (!this.hasPaid && this.productsInBag.length > 0) {
+                                let totalValue = 0;
+                                let totalPoints = 0;
+                                this.productsInBag.forEach(p => {
+                                    totalValue += p.type.salePrice;
+                                    totalPoints += p.value;
+                                });
+                                money += totalValue;
+                                score += totalPoints;
+                                this.hasPaid = true;
+                                updateUI();
+                                saveGame();
+                            }
+                            this.state = 'leaving';
+                        }
+                        break;
+
+                    case 'leaving':
+                        if (this.moveTo(door.x + door.width / 2, door.y + door.height / 2, 15)) {
+                            const index = customers.indexOf(this);
+                            if (index > -1) customers.splice(index, 1);
+                        }
+                        break;
+                }
+
+                // --- Animation and Stuck Logic (runs AFTER movement) ---
+                const isMoving = Math.abs(this.x - initialX) > 0.01 || Math.abs(this.y - initialY) > 0.01;
+                
+                this.animationTimer += deltaTime;
+                if (isMoving) {
+                    if (this.animationTimer > GAME_CONFIG.ANIMATION_SPEED) {
+                        this.animationTimer %= GAME_CONFIG.ANIMATION_SPEED;
+                        this.animationFrame = (this.animationFrame + 1) % 2;
+                    }
+                } else {
+                    this.animationFrame = 0; // Idle frame
+                }
+            }
+            
+            moveTo(targetX, targetY, threshold = 7.5) { 
+                const dx = targetX - this.x;
+                const dy = targetY - this.y; 
+                const distance = Math.sqrt(dx * dx + dy * dy); 
+
+                if (Math.abs(dx) > 0.1) {
+                    this.direction = dx < 0 ? 'left' : 'right';
+                }
+
+                if (distance <= threshold) { 
+                    return true; 
+                } 
+
+                this.x += (dx / distance) * this.speed; 
+                this.y += (dy / distance) * this.speed;
+
+                // Clamp to world boundaries
+                this.x = Math.max(this.size, Math.min(this.x, GAME_CONFIG.WORLD_WIDTH - this.size));
+                this.y = Math.max(this.size, Math.min(this.y, GAME_CONFIG.WORLD_HEIGHT - this.size));
+                
+                const newDistance = Math.sqrt(Math.pow(targetX - this.x, 2) + Math.pow(targetY - this.y, 2));
+
+                return newDistance <= threshold;
+            } 
+            
+            wander() {
+                if (!this.wanderTarget || this.moveTo(this.wanderTarget.x, this.wanderTarget.y)) {
+                    if (Math.random() < 0.8 && shelves.length > 0) {
+                        // Escolhe um ponto em frente a uma prateleira aleatória
+                        const randomShelf = shelves[Math.floor(Math.random() * shelves.length)];
+                        this.wanderTarget = {
+                            x: randomShelf.x + (Math.random() * randomShelf.width),
+                            y: randomShelf.y + randomShelf.height + (this.size * 2) // Um pouco à frente da prateleira
+                        };
+                    } else {
+                        // Escolhe um ponto verdadeiramente aleatório
+                        this.wanderTarget = {x: Math.random() * (GAME_CONFIG.WORLD_WIDTH-150)+75, y: Math.random() * (GAME_CONFIG.WORLD_HEIGHT-150)+75};
+                    }
+                    // Garante que o alvo esteja dentro dos limites do mundo
+                    this.wanderTarget.x = Math.max(this.size, Math.min(this.wanderTarget.x, GAME_CONFIG.WORLD_WIDTH - this.size));
+                    this.wanderTarget.y = Math.max(this.size, Math.min(this.wanderTarget.y, GAME_CONFIG.WORLD_HEIGHT - this.size));
+                }
+            }
+            
+            draw() {
+                ctx.save();
+
+                const drawX = this.x - camera.x;
+                const drawY = this.y - camera.y;
+
+                ctx.translate(drawX, drawY);
+                if (this.direction === 'left') {
+                    ctx.scale(-1, 1);
+                }
+
+                const spriteSet = customerImages[this.spriteSetIndex];
+                if (spriteSet) {
+                    const img = spriteSet[this.animationFrame];
+                    if (img && img.complete) {
+                        ctx.drawImage(img, -this.size, -this.size, this.size * 2, this.size * 2);
+                    } else {
+                        ctx.fillStyle = COLORS.GRAY;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+                
+                ctx.restore();
+                
+                if (this.commentTimer > 0 && this.comment) { 
+                    ctx.font = 'bold 18px Arial'; 
+                    const textMetrics = ctx.measureText(this.comment); 
+                    const bubbleWidth = textMetrics.width + 15; 
+                    const bubbleHeight = 30; 
+                    const bubbleX = this.x - camera.x - bubbleWidth / 2; 
+                    const bubbleY = this.y - camera.y - this.size - bubbleHeight - 15; 
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; 
+                    ctx.fillRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight); 
+                    ctx.fillStyle = COLORS.BLACK; 
+                    ctx.textAlign = 'center'; 
+                    ctx.fillText(this.comment, this.x - camera.x, bubbleY + 22); 
+                } 
+            } 
+        }
+
+        class Bot extends Customer {
+            constructor() {
+                super(); // Herda propriedades como animação, tamanho, etc.
+                this.homePosition = { x: computerArea.x + computerArea.width / 2, y: computerArea.y + computerArea.height + 30 };
+                this.x = this.homePosition.x;
+                this.y = this.homePosition.y;
+                this.speed = GAME_CONFIG.PLAYER_SPEED * 0.8;
+                this.state = 'idle'; // 'idle', 'movingToBox', 'movingToShelf', 'returningHome'
+                this.targetBox = null;
+                this.targetShelfInfo = null;
+                this.carryingProductType = null;
+                this.spriteSetIndex = 1; // Sprite do cliente de camisa azul
+            }
+
+            getSlotPosition(shelf, productIndex) {
+                 const paddingX = 22.5;
+                const paddingTop = 30;
+                const paddingBottom = 67.5;
+                const startX = shelf.x + paddingX;
+                const startY = shelf.y + paddingTop;
+                const availableWidth = shelf.width - (paddingX * 2);
+                const availableHeight = shelf.height - paddingTop - paddingBottom;
+                const productsPerRow = shelf.isSpecial ? GAME_CONFIG.PRODUCTS_PER_ROW * 2 : GAME_CONFIG.PRODUCTS_PER_ROW;
+                const slotWidth = availableWidth / productsPerRow;
+                const baseSlotHeight = availableHeight / GAME_CONFIG.PRODUCTS_PER_COL;
+
+                const row = Math.floor(productIndex / productsPerRow);
+                const col = productIndex % productsPerRow;
+                const x = startX + col * slotWidth + slotWidth / 2;
+                const y = startY + (row * baseSlotHeight) + (baseSlotHeight / 2) + shelf.rowOffsets[row];
+                
+                return { x, y: y + this.size }; // Target below the slot
+            }
+
+            findWork() {
+                // Pass 1: Restock existing rows
+                for (const shelf of shelves) {
+                    const productsPerRow = shelf.isSpecial ? GAME_CONFIG.PRODUCTS_PER_ROW * 2 : GAME_CONFIG.PRODUCTS_PER_ROW;
+                    for (let r = 0; r < GAME_CONFIG.PRODUCTS_PER_COL; r++) {
+                        const productTypeId = shelf.rowProductType[r];
+                        if (productTypeId) {
+                            const productBox = productBoxes.find(b => b.productType.id === productTypeId && b.quantity > 0);
+                            if (productBox) {
+                                for (let c = 0; c < productsPerRow; c++) {
+                                    const index = r * productsPerRow + c;
+                                    if (index < shelf.products.length && !shelf.products[index]) {
+                                        return { shelf, index, productType: getProductTypeById(productTypeId), box: productBox };
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Pass 2: Assign new product to an empty row
+                const assignedProductIds = new Set();
+                shelves.forEach(s => s.rowProductType.forEach(id => {
+                    if (id) assignedProductIds.add(id);
+                }));
+
+                const availableBoxes = productBoxes.filter(b => b.quantity > 0 && !assignedProductIds.has(b.productType.id));
+                if (availableBoxes.length > 0) {
+                     for (const shelf of shelves) {
+                        const productsPerRow = shelf.isSpecial ? GAME_CONFIG.PRODUCTS_PER_ROW * 2 : GAME_CONFIG.PRODUCTS_PER_ROW;
+                        for (let r = 0; r < GAME_CONFIG.PRODUCTS_PER_COL; r++) {
+                            if (shelf.rowProductType[r] === null) {
+                                let rowIsEmpty = true;
+                                for (let c = 0; c < productsPerRow; c++) {
+                                    if (shelf.products[r * productsPerRow + c]) {
+                                        rowIsEmpty = false;
+                                        break;
+                                    }
+                                }
+                                if (rowIsEmpty) {
+                                    const productType = availableBoxes[0].productType;
+                                    shelf.rowProductType[r] = productType.id;
+                                    const index = r * productsPerRow;
+                                    return { shelf, index, productType, box: availableBoxes[0]};
+                                }
+                            }
+                        }
+                    }
+                }
+                return null;
+            }
+
+            update(deltaTime) {
+                const initialX = this.x;
+                const initialY = this.y;
+
+                switch(this.state) {
+                    case 'idle':
+                        this.homePosition = { x: computerArea.x + computerArea.width / 2, y: computerArea.y + computerArea.height + 30 };
+                        const task = this.findWork();
+                        if (task) {
+                            this.targetBox = task.box;
+                            this.targetShelfInfo = { shelf: task.shelf, index: task.index };
+                            this.carryingProductType = task.productType;
+                            this.state = 'movingToBox';
+                        }
+                        break;
+                    case 'movingToBox':
+                        const targetBoxX = this.targetBox.x + this.targetBox.width / 2;
+                        const targetBoxY = this.targetBox.y + this.targetBox.height / 2;
+                        if (this.moveTo(targetBoxX, targetBoxY)) {
+                            if (this.targetBox.quantity > 0) {
+                                this.targetBox.quantity--;
+                                this.state = 'movingToShelf';
+                            } else {
+                                this.state = 'idle'; // Box became empty, find new work
+                            }
+                        }
+                        break;
+                    case 'movingToShelf':
+                        const { shelf, index } = this.targetShelfInfo;
+                        const pos = this.getSlotPosition(shelf, index);
+                        if (this.moveTo(pos.x, pos.y)) {
+                            shelf.products[index] = new Product(this.carryingProductType);
+                            if (!allowCustomerSpawn) allowCustomerSpawn = true;
+                            this.carryingProductType = null;
+                            this.state = 'returningHome';
+                            saveGame();
+                        }
+                        break;
+                    case 'returningHome':
+                        this.homePosition = { x: computerArea.x + computerArea.width / 2, y: computerArea.y + computerArea.height + 30 };
+                        if (this.moveTo(this.homePosition.x, this.homePosition.y)) {
+                            this.state = 'idle';
+                        }
+                        break;
+                }
+                
+                // Animation logic
+                const isMoving = Math.abs(this.x - initialX) > 0.01 || Math.abs(this.y - initialY) > 0.01;
+                this.animationTimer += deltaTime;
+                if (isMoving) {
+                    if (this.animationTimer > GAME_CONFIG.ANIMATION_SPEED) {
+                        this.animationTimer %= GAME_CONFIG.ANIMATION_SPEED;
+                        this.animationFrame = (this.animationFrame + 1) % 2;
+                    }
+                } else {
+                    this.animationFrame = 0; // Idle frame
+                }
+            }
+
+            draw() {
+                super.draw(); // Use the customer draw method
+                if (this.carryingProductType) {
+                    // Draw a small box above head
+                    ctx.fillStyle = COLORS.BROWN;
+                    ctx.fillRect(this.x - camera.x - 15, this.y - camera.y - this.size - 30, 30, 20);
+                }
+            }
+        }
+        
+        class Door {
+            constructor() { 
+                this.x = GAME_CONFIG.WORLD_WIDTH / 2 - 60; 
+                this.y = GAME_CONFIG.WORLD_HEIGHT - 150; 
+                this.width = 120; 
+                this.height = 150; 
+            }
+            
+            draw() { 
+                ctx.fillStyle = COLORS.BROWN; 
+                ctx.fillRect(this.x - camera.x, this.y - camera.y, this.width, this.height); 
+                ctx.fillStyle = COLORS.WHITE; 
+                ctx.font = 'bold 18px Arial'; 
+                ctx.textAlign = 'center'; 
+                ctx.fillText('ENTRADA', this.x + this.width / 2 - camera.x, this.y - 15 - camera.y); 
+            }
+        }
+
+        class ComputerArea {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 150;
+                this.height = 120;
+            }
+
+            draw() {
+                const img = computerAreaImage.complete ? computerAreaImage : null;
+                if (img) {
+                    ctx.drawImage(img, this.x - camera.x, this.y - camera.y, this.width, this.height);
+                } else {
+                    // Desenha a mesa
+                    ctx.fillStyle = COLORS.BROWN;
+                    ctx.fillRect(this.x - camera.x, this.y - camera.y, this.width, this.height);
+                    // Desenha o monitor do PC
+                    ctx.fillStyle = COLORS.DARK_GRAY;
+                    ctx.fillRect(this.x + 30 - camera.x, this.y + 15 - camera.y, 90, 60);
+                    ctx.fillStyle = COLORS.BLUE;
+                    ctx.fillRect(this.x + 37.5 - camera.x, this.y + 22.5 - camera.y, 75, 45);
+                    // Desenha a torre do PC
+                    ctx.fillStyle = COLORS.DARK_GRAY;
+                    ctx.fillRect(this.x + 52.5 - camera.x, this.y + 82.5 - camera.y, 45, 30);
+                }
+                // Desenha o texto
+                ctx.fillStyle = COLORS.WHITE;
+                ctx.font = 'bold 18px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('COMPRAS', this.x + this.width / 2 - camera.x, this.y - 15 - camera.y);
+            }
+
+            checkCollision(player) {
+                const closestX = Math.max(this.x, Math.min(player.x, this.x + this.width));
+                const closestY = Math.max(this.y, Math.min(player.y, this.y + this.height));
+                const distanceX = player.x - closestX;
+                const distanceY = player.y - closestY;
+                const distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+                return distanceSquared < (player.size * player.size);
+            }
+        }
+        
+        function resizeCanvas() { 
+            canvas.width = window.innerWidth; 
+            canvas.height = window.innerHeight - document.querySelector('.game-header').offsetHeight; 
+        }
+        
+        function updateUI() { 
+            gameStats.style.display = 'flex';
+            playerStatusEl.textContent = player.carrying ? 'Carregando' : 'Livre'; 
+            scoreEl.textContent = score; 
+            moneyEl.textContent = `R$ ${money.toFixed(2)}`; 
+            menuMoneyDisplay.textContent = `Dinheiro: R$ ${money.toFixed(2)}`; 
+            buyShelfButton.disabled = money < GAME_CONFIG.SHELF_PRICE; 
+            buySpecialShelfButton.disabled = money < SPECIAL_SHELF_PRICE;
+            buyFreezerButton.disabled = money < GAME_CONFIG.FREEZER_PRICE;
+            hireBotButton.disabled = money < GAME_CONFIG.BOT_HIRE_COST || botHired;
+            if(botHired) {
+                hireBotButton.textContent = "Contratado";
+            }
+            updateBuyButtons(); 
+        }
+        
+        function updateBuyButtons() { 
+            const productCards = productsGrid.querySelectorAll('.product-card'); 
+            productCards.forEach(card => { 
+                const product = getProductTypeById(parseInt(card.dataset.productId)); 
+                if (!product || card.classList.contains('locked')) 
+                    return; 
+                const buyButton = card.querySelector('.buy-product-button'); 
+                const quantityDisplay = card.querySelector('.quantity-display'); 
+                let quantity = 1; 
+                if(selectedProduct === product.id) { 
+                    quantity = selectedQuantity; 
+                } 
+                quantityDisplay.textContent = quantity; 
+                buyButton.disabled = money < product.price * quantity; 
+            }); 
+        }
+        
+        function updatePlayerStatus(status) { 
+            playerStatusEl.textContent = status; 
+        }
+        
+        function showMessage(text, duration = 2000) { 
+            messageEl.textContent = text; 
+            messageEl.classList.add('show'); 
+            setTimeout(() => { 
+                messageEl.classList.remove('show'); 
+            }, duration); 
+        }
+        
+        function updateCamera() { 
+            const viewWidth = canvas.width / GAME_CONFIG.GAME_SCALE;
+            const viewHeight = canvas.height / GAME_CONFIG.GAME_SCALE;
+            const idealX = player.x - viewWidth / 2; 
+            const idealY = player.y - viewHeight / 2; 
+            const limitedX = Math.max(0, Math.min(idealX, GAME_CONFIG.WORLD_WIDTH - viewWidth)); 
+            const limitedY = Math.max(0, Math.min(idealY, GAME_CONFIG.WORLD_HEIGHT - viewHeight)); 
+            camera.x += (limitedX - camera.x) * GAME_CONFIG.CAMERA_SPEED; 
+            camera.y += (limitedY - camera.y) * GAME_CONFIG.CAMERA_SPEED; 
+        }
+
+        function updateComputerLocator() {
+            if (!computerArea || !gameRunning) {
+                computerLocator.style.opacity = '0';
+                return;
+            }
+
+            const screenX = (computerArea.x + computerArea.width / 2 - camera.x) * GAME_CONFIG.GAME_SCALE;
+            const screenY = (computerArea.y + computerArea.height / 2 - camera.y) * GAME_CONFIG.GAME_SCALE;
+
+            const isVisible = screenX > 0 && screenX < canvas.width && screenY > 0 && screenY < canvas.height;
+
+            if (isVisible) {
+                computerLocator.style.opacity = '0';
+            } else {
+                computerLocator.style.opacity = '1';
+
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                
+                const angle = Math.atan2(screenY - centerY, screenX - centerX);
+                
+                let arrowX = centerX + (centerX - 60) * Math.cos(angle);
+                let arrowY = centerY + (centerY - 60) * Math.sin(angle);
+
+                // Clamp position to be within canvas boundaries
+                arrowX = Math.max(45, Math.min(canvas.width - 45, arrowX));
+                arrowY = Math.max(45, Math.min(canvas.height - 45, arrowY));
+
+                computerLocator.style.left = `${arrowX}px`;
+                computerLocator.style.top = `${arrowY}px`;
+                computerLocator.style.transform = `translate(-50%, -50%) rotate(${angle}rad)`;
+            }
+        }
+        
+        function setupNewGame() { 
+            player = new Player(); 
+            counter = new Counter(); 
+            shelves = [new Shelf(GAME_CONFIG.WORLD_WIDTH / 2 - GAME_CONFIG.SHELF_WIDTH / 2, GAME_CONFIG.WORLD_HEIGHT / 2 - GAME_CONFIG.SHELF_HEIGHT / 2)]; 
+            freezers = [];
+            customers = []; 
+            paymentQueue = []; 
+            door = new Door();
+            computerArea = new ComputerArea(75, 75);
+            productBoxes = []; 
+            score = 0; 
+            money = 200; 
+            bot = null;
+            botHired = false;
+            customerSpawnTimer = 0; 
+            allowCustomerSpawn = false; 
+            camera = { x: 0, y: 0 }; 
+            currentPricingProduct = null; 
+            isMarketOpen = true; 
+            tutorialState = {
+                welcome: false,
+                buyProducts: false,
+                pickupBox: false,
+                setPrice: false,
+                placeProduct: false
+            };
+            toggleMarketButtonImage.src = MARKET_CLOSE_IMG;
+            createProductsMenu(); 
+            updateUI(); 
+        }
+        
+        function saveGame() { 
+            const gameState = { 
+                money: money, 
+                score: score, 
+                botHired: botHired,
+                shelves: shelves.map(s => ({ 
+                    x: s.x, 
+                    y: s.y, 
+                    isSpecial: s.isSpecial,
+                    width: s.width,
+                    height: s.height,
+                    products: s.products.map(p => p ? p.type.id : null),
+                    rowOffsets: s.rowOffsets,
+                    rowProductType: s.rowProductType,
+                })),
+                freezers: freezers.map(f => ({
+                    x: f.x,
+                    y: f.y,
+                    products: f.products
+                })),
+                productBoxes: productBoxes.map(b => ({ 
+                    x: b.x, 
+                    y: b.y, 
+                    productTypeId: b.productType.id, 
+                    quantity: b.quantity,
+                    needsPriceSet: b.needsPriceSet
+                })),
+                productCustomData: PRODUCT_TYPES.map(pt => ({ 
+                    id: pt.id, 
+                    salePrice: pt.salePrice,
+                    name: pt.name
+                })),
+                isMarketOpen: isMarketOpen,
+                tutorialState: tutorialState,
+                counterPos: { x: counter.x, y: counter.y },
+                computerPos: { x: computerArea.x, y: computerArea.y },
+            }; 
+            localStorage.setItem('supermercadoRPGSave', JSON.stringify(gameState));
+        }
+        
+        function loadGame() { 
+            const savedData = localStorage.getItem('supermercadoRPGSave'); 
+            if (!savedData) 
+                return false; 
+            try {
+                const gameState = JSON.parse(savedData); 
+                money = gameState.money; 
+                score = gameState.score; 
+                botHired = gameState.botHired || false;
+                
+                shelves = gameState.shelves.map(sData => { 
+                    const shelf = new Shelf(sData.x, sData.y, sData.isSpecial || false); 
+                    if (sData.width) shelf.width = sData.width;
+                    if (sData.height) shelf.height = sData.height;
+                    shelf.products = sData.products.map(productId => {
+                        if (!productId) return null;
+                        const productType = getProductTypeById(productId);
+                        return productType ? new Product(productType) : null;
+                    }); 
+                    shelf.rowOffsets = sData.rowOffsets || new Array(GAME_CONFIG.PRODUCTS_PER_COL).fill(0);
+                    shelf.rowProductType = sData.rowProductType || new Array(GAME_CONFIG.PRODUCTS_PER_COL).fill(null);
+                    if (shelf.rowOffsets.length < GAME_CONFIG.PRODUCTS_PER_COL) {
+                       shelf.rowOffsets.push(...new Array(GAME_CONFIG.PRODUCTS_PER_COL - shelf.rowOffsets.length).fill(0));
+                    }
+                    return shelf; 
+                });
+                freezers = (gameState.freezers || []).map(fData => {
+                    const freezer = new Freezer(fData.x, fData.y);
+                    if (fData.products) {
+                        freezer.products = fData.products;
+                    }
+                    return freezer;
+                });
+                productBoxes = gameState.productBoxes.map(bData => { 
+                    const productType = getProductTypeById(bData.productTypeId); 
+                    if (productType) {
+                        const box = new ProductBox(bData.x, bData.y, productType, bData.quantity);
+                        box.needsPriceSet = bData.needsPriceSet === undefined ? true : bData.needsPriceSet;
+                        return box;
+                    }
+                    return null;
+                }).filter(b => b !== null); 
+                if (gameState.productCustomData) {
+                    gameState.productCustomData.forEach(pData => { 
+                        const productType = getProductTypeById(pData.id); 
+                        if (productType) {
+                            productType.salePrice = pData.salePrice;
+                            productType.name = pData.name;
+                        }
+                    }); 
+                }
+                isMarketOpen = gameState.isMarketOpen !== undefined ? gameState.isMarketOpen : true;
+                if (isMarketOpen) {
+                    toggleMarketButtonImage.src = MARKET_CLOSE_IMG;
+                } else {
+                    toggleMarketButtonImage.src = MARKET_OPEN_IMG;
+                }
+                 tutorialState = gameState.tutorialState || { welcome: false, buyProducts: false, pickupBox: false, setPrice: false, placeProduct: false };
+                player = new Player(); 
+                counter = new Counter();
+                if(gameState.counterPos) {
+                    counter.x = gameState.counterPos.x;
+                    counter.y = gameState.counterPos.y;
+                }
+                door = new Door(); 
+                computerArea = new ComputerArea(75, 75);
+                if(gameState.computerPos) {
+                    computerArea.x = gameState.computerPos.x;
+                    computerArea.y = gameState.computerPos.y;
+                }
+                if (botHired) {
+                    bot = new Bot();
+                }
+                customers = []; 
+                paymentQueue = []; 
+                allowCustomerSpawn = shelves.some(s => s.hasProducts()); 
+                createProductsMenu(); 
+                updateUI(); 
+                return true; 
+            } catch (e) {
+                console.error("Erro ao carregar jogo:", e);
+                return false;
+            }
+        }
+        
+        function createProductsMenu() { 
+            productsGrid.innerHTML = '';
+            PRODUCT_TYPES.forEach(product => { 
+                const card = document.createElement('div');
+                const isLocked = score < product.requiredScore;
+                card.className = `product-card ${isLocked ? 'locked' : ''}`;
+                card.dataset.productId = product.id;
+
+                if (isLocked) {
+                    card.innerHTML = `
+                        <img class="product-image" src="${product.image}" style="filter: grayscale(1);">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-price">R$ ${product.price.toFixed(2)}</div>
+                        <div class="lock-overlay">
+                            <span>🔒</span>
+                            <div>${product.requiredScore} Pts</div>
+                        </div>
+                    `;
+                } else {
+                    card.innerHTML = ` 
+                        <img class="product-image" src="${product.image}"> 
+                        <div class="product-name">${product.name}</div> 
+                        <div class="product-price">R$ ${product.price.toFixed(2)}</div> 
+                        <div class="product-controls"> 
+                            <button class="quantity-button decrease">-</button> 
+                            <div class="quantity-display">1</div> 
+                            <button class="quantity-button increase">+</button> 
+                        </div>
+                        <button class="buy-product-button">Comprar</button> 
+                    `; 
+                    const quantityDisplay = card.querySelector('.quantity-display'); 
+                    const buyBtn = card.querySelector('.buy-product-button'); 
+                    card.querySelector('.decrease').onclick = () => { 
+                        let q = parseInt(quantityDisplay.textContent); 
+                        if (q > 1) { 
+                            quantityDisplay.textContent = q - 1; 
+                            updateBuyButtons(); 
+                        } 
+                    }; 
+                    card.querySelector('.increase').onclick = () => { 
+                        let q = parseInt(quantityDisplay.textContent); 
+                        quantityDisplay.textContent = q + 1; 
+                        updateBuyButtons(); 
+                    }; 
+                    buyBtn.onclick = () => { 
+                        const quantity = parseInt(quantityDisplay.textContent); 
+                        if (money >= product.price * quantity) { 
+                            money -= product.price * quantity; 
+                            addProductBox(product, quantity); 
+                            updateUI(); 
+                            showMessage("Compra realizada!"); 
+                            saveGame();
+                            setTimeout(() => triggerTutorial({ tutorialId: 'pickupBox', imageUrl: ACTION_BUTTON_IMG }), 500);
+                        } 
+                    }; 
+                }
+                productsGrid.appendChild(card); 
+            }); 
+            updateBuyButtons(); 
+        }
+
+        function createPurchasedProductsMenu() {
+            purchasedProductsGrid.innerHTML = '';
+            const ownedProductIds = new Set();
+            
+            // Collect all unique owned product IDs
+            shelves.forEach(shelf => {
+                shelf.products.forEach(p => {
+                    if (p) ownedProductIds.add(p.type.id);
+                });
+            });
+            productBoxes.forEach(box => {
+                ownedProductIds.add(box.productType.id);
+            });
+
+            if (ownedProductIds.size === 0) {
+                purchasedProductsGrid.innerHTML = `<p style="color: #ccc; text-align: center; grid-column: 1 / -1;">Você ainda não tem produtos em estoque.</p>`;
+                return;
+            }
+
+            // Create cards for each owned product
+            ownedProductIds.forEach(id => {
+                const product = getProductTypeById(id);
+                if (!product) return;
+
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.dataset.productId = product.id;
+                card.innerHTML = `
+                    <img class="product-image" src="${product.image}"> 
+                    <div class="product-name">${product.name}</div> 
+                    <div class="product-price" style="color: #f1c40f;">Venda: R$ ${product.salePrice.toFixed(2)}</div> 
+                    <button class="edit-price-button">Alterar Preço</button>
+                    <button class="edit-name-button">Editar Nome</button>
+                `;
+                card.querySelector('.edit-price-button').onclick = () => {
+                    openPriceMenuForProduct(product.id);
+                };
+                card.querySelector('.edit-name-button').onclick = () => {
+                    const newName = prompt(`Digite o novo nome para "${product.name}":`, product.name);
+                    if (newName && newName.trim() !== "") {
+                        product.name = newName.trim();
+                        showMessage(`Nome alterado para "${product.name}"!`);
+                        saveGame();
+                        createPurchasedProductsMenu(); 
+                        createProductsMenu();
+                    }
+                };
+                purchasedProductsGrid.appendChild(card);
+            });
+        }
+        
+        function addProductBox(productType, quantity) { 
+            let remainingQuantity = quantity;
+            const stockExists = shelves.some(s => s.products.some(p => p && p.type.id === productType.id)) || productBoxes.some(b => b.productType.id === productType.id);
+
+            const existingBox = productBoxes.find(b => b.productType.id === productType.id && b.quantity < b.maxQuantity); 
+            if (existingBox) { 
+                const space = existingBox.maxQuantity - existingBox.quantity; 
+                const amountToAdd = Math.min(remainingQuantity, space); 
+                existingBox.quantity += amountToAdd; 
+                remainingQuantity -= amountToAdd; 
+            } 
+            const deliveryX = 225; 
+            let deliveryY = 75; 
+            while(remainingQuantity > 0) { 
+                const boxQuantity = Math.min(remainingQuantity, 10); 
+                let placed = false; 
+                while(!placed){ 
+                    let collides = productBoxes.some(b => Math.abs(b.x - deliveryX) < GAME_CONFIG.BOX_WIDTH && Math.abs(b.y - deliveryY) < GAME_CONFIG.BOX_HEIGHT); 
+                    if(!collides){ 
+                        const newBox = new ProductBox(deliveryX, deliveryY, productType, boxQuantity);
+                        newBox.needsPriceSet = !stockExists;
+                        productBoxes.push(newBox); 
+                        placed = true; 
+                    } 
+                    deliveryY += GAME_CONFIG.BOX_HEIGHT + GAME_CONFIG.BOX_SPACING; 
+                } 
+                remainingQuantity -= boxQuantity; 
+            } 
+        }
+
+        function updateButtonVisibility() {
+            let isNearBox = false;
+            for (const box of productBoxes) {
+                if (box.checkCollision(player)) {
+                    isNearBox = true;
+                    break;
+                }
+            }
+            
+            let isNearFreezer = false;
+            for (const freezer of freezers) {
+                if (freezer.checkCollision(player)) {
+                    isNearFreezer = true;
+                    break;
+                }
+            }
+
+            // Botão de ação: Visível se carregando uma caixa, perto de uma caixa, ou perto de um freezer
+            actionButton.style.display = (player.box || (!player.box && isNearBox) || isNearFreezer) ? 'flex' : 'none';
+
+            // Visibilidade do botão de compra
+            const isNearComputer = computerArea.checkCollision(player);
+            buyButton.style.display = isNearComputer ? 'flex' : 'none';
+        }
+
+        function gameLoop(timestamp) { 
+            if (!gameRunning && !isSettingsMode) {
+                return; // Jogo totalmente pausado
+            }
+
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+
+            // Lógica do jogo só roda se não estiver pausado
+            if (gameRunning) {
+                updateCamera();
+                updateComputerLocator();
+
+                if (bot) bot.update(deltaTime);
+                freezers.forEach(f => f.update(deltaTime));
+
+                customerSpawnTimer += deltaTime; 
+                if (customerSpawnTimer > GAME_CONFIG.CUSTOMER_SPAWN_RATE && allowCustomerSpawn && isMarketOpen) { 
+                    customerSpawnTimer = 0; 
+                    if (customers.length < 10) 
+                        customers.push(new Customer()); 
+                } 
+                customers.forEach(customer => customer.update(deltaTime)); 
+                
+                player.update(deltaTime);
+                handleInput(); 
+            }
+
+            updateButtonVisibility();
+
+            // --- INÍCIO DO DESENHO ---
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.scale(GAME_CONFIG.GAME_SCALE, GAME_CONFIG.GAME_SCALE);
+            
+            // Desenha o piso com padrão xadrez repetido
+            if (floorImage.complete) {
+                const tileSize = GAME_CONFIG.FLOOR_TILE_SIZE; 
+                const startX = - (camera.x % tileSize);
+                const startY = - (camera.y % tileSize);
+                
+                for (let x = startX; x < canvas.width / GAME_CONFIG.GAME_SCALE; x += tileSize) {
+                    for (let y = startY; y < canvas.height / GAME_CONFIG.GAME_SCALE; y += tileSize) {
+                        ctx.drawImage(floorImage, x, y, tileSize, tileSize);
+                    }
+                }
+            } else {
+                ctx.fillStyle = '#34495e';
+                ctx.fillRect(0, 0, canvas.width / GAME_CONFIG.GAME_SCALE, canvas.height / GAME_CONFIG.GAME_SCALE);
+            }
+            
+            door.draw(); 
+            counter.draw(); 
+            computerArea.draw();
+            shelves.forEach(shelf => shelf.draw());
+            freezers.forEach(freezer => freezer.draw());
+            productBoxes.forEach(box => {
+                if (player.box !== box) {
+                    box.draw();
+                }
+            }); 
+            customers.forEach(customer => customer.draw()); 
+            if (bot) bot.draw();
+            player.draw(); 
+            
+            ctx.restore();
+            // --- FIM DO DESENHO ---
+            
+            // Gatilhos de Tutorial
+            if (gameRunning) {
+                if (computerArea.checkCollision(player)) triggerTutorial({ tutorialId: 'buyProducts', imageUrl: BUY_BUTTON_IMG });
+                if (player.box && shelves.some(s => s.checkCollision(player))) triggerTutorial({ tutorialId: 'placeProduct' });
+            }
+
+            requestAnimationFrame(gameLoop); 
+        }
+        
+        function handleInput() { 
+            if (joystickActive) 
+                player.move(joystickVector.x, joystickVector.y); 
+            else 
+                player.move(0, 0); 
+        }
+        
+        function interact() { 
+             // Se o jogador está carregando uma caixa, a ação é SOLTAR
+            if (player.box) {
+                const droppedBox = player.dropBox();
+                if (droppedBox) {
+                    droppedBox.x = player.x;
+                    droppedBox.y = player.y;
+                    productBoxes.push(droppedBox); // Adiciona de volta ao array do mundo
+                    showMessage("Caixa colocada no chão!");
+                }
+                return;
+            }
+            
+            // Se não, a ação é PEGAR uma caixa
+            for (const box of productBoxes) {
+                if (box.checkCollision(player)) {
+                    if (box.hasProducts()) {
+                        if (player.pickBox(box)) {
+                            const boxIndex = productBoxes.indexOf(box);
+                            if (boxIndex > -1) {
+                                productBoxes.splice(boxIndex, 1);
+                            }
+                            showMessage("Caixa coletada!");
+
+                            if (box.needsPriceSet) {
+                                triggerTutorial({ tutorialId: 'setPrice', callback: openPriceMenu });
+                            }
+                        }
+                    } else {
+                        showMessage("Esta caixa está vazia!");
+                    }
+                    return;
+                }
+            }
+            
+            // Se não estava perto de uma caixa, checa o freezer
+            for (const freezer of freezers) {
+                if (freezer.checkCollision(player)) {
+                    openFreezerPriceMenu(freezer);
+                    return;
+                }
+            }
+        }
+        
+        function findProductAtPosition(worldX, worldY) {
+            for (const shelf of shelves) {
+                const paddingX = 22.5;
+                const paddingTop = 30;
+                const paddingBottom = 67.5;
+                const startX = shelf.x + paddingX;
+                const startY = shelf.y + paddingTop;
+                const availableWidth = shelf.width - (paddingX * 2);
+                const availableHeight = shelf.height - paddingTop - paddingBottom;
+                const productsPerRow = shelf.isSpecial ? GAME_CONFIG.PRODUCTS_PER_ROW * 2 : GAME_CONFIG.PRODUCTS_PER_ROW;
+                const slotWidth = availableWidth / productsPerRow;
+                const baseSlotHeight = availableHeight / GAME_CONFIG.PRODUCTS_PER_COL;
+                
+                for (let i = 0; i < shelf.products.length; i++) {
+                    const product = shelf.products[i];
+                    if (!product) continue;
+
+                    const row = Math.floor(i / productsPerRow);
+                    const col = i % productsPerRow;
+                    
+                    const productCenterX = startX + col * slotWidth + slotWidth / 2;
+                    const productCenterY = startY + (row * baseSlotHeight) + (baseSlotHeight / 2) + shelf.rowOffsets[row];
+                    
+                    const w = slotWidth * (product.type.width / 100);
+                    const h = baseSlotHeight * (product.type.height / 100);
+
+                    if (worldX >= productCenterX - w / 2 && worldX <= productCenterX + w / 2 &&
+                        worldY >= productCenterY - h / 2 && worldY <= productCenterY + h / 2) {
+                        return { product, shelf, index: i };
+                    }
+                }
+            }
+            return null;
+        }
+
+        function handleCanvasClick(e) {
+            if (!gameRunning || isDraggingShelf) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const worldX = (clientX - rect.left) / GAME_CONFIG.GAME_SCALE + camera.x;
+            const worldY = (clientY - rect.top) / GAME_CONFIG.GAME_SCALE + camera.y;
+
+            const clickedFreezer = freezers.find(f => 
+                worldX >= f.x && worldX <= f.x + f.width &&
+                worldY >= f.y && worldY <= f.y + f.height
+            );
+
+            if (clickedFreezer && clickedFreezer.checkCollision(player)) {
+                openFreezerPriceMenu(clickedFreezer);
+                return;
+            }
+
+            const clickedShelf = shelves.find(s => 
+                worldX >= s.x && worldX <= s.x + s.width &&
+                worldY >= s.y && worldY <= s.y + s.height
+            );
+
+            if (!clickedShelf) {
+                return;
+            }
+            
+            if (!clickedShelf.checkCollision(player)) {
+                showMessage("Aproxime-se da prateleira para interagir!");
+                return;
+            }
+
+            // Prioritize interacting with an existing product
+            const clickedProductInfo = findProductAtPosition(worldX, worldY);
+
+            if (clickedProductInfo && clickedProductInfo.shelf === clickedShelf) {
+                // --- AÇÃO: Interagir com produto existente (REMOVER da prateleira) ---
+                const { product, shelf, index } = clickedProductInfo;
+
+                if (!player.box) {
+                    // Player is empty-handed, wants to pick up a product.
+                    shelf.products[index] = null; // Remove from shelf
+                    
+                    // Find an existing box on the floor to add to.
+                    const existingBox = productBoxes.find(b => b.productType.id === product.type.id && b.quantity < b.maxQuantity);
+                    if (existingBox) {
+                        existingBox.quantity++;
+                        showMessage("");
+                    } else {
+                        // No existing box on the floor, create a new one for the player to carry.
+                        const newBox = new ProductBox(player.x, player.y, product.type, 1);
+                        newBox.needsPriceSet = false; // Price is already set for items on shelf
+                        player.pickBox(newBox);
+                        showMessage("");
+                    }
+                } else if (player.box.productType.id === product.type.id) {
+                    // Player is carrying a box of the SAME type.
+                    if (player.box.quantity < player.box.maxQuantity) {
+                        shelf.products[index] = null; // Remove from shelf
+                        player.box.quantity++;
+                        showMessage("Produto adicionado à caixa!");
+                    } else {
+                        showMessage("A sua caixa está cheia!");
+                    }
+                } else {
+                    // Player is carrying a box of a DIFFERENT type.
+                    showMessage("Solte a caixa atual para pegar este.");
+                }
+                updateUI();
+                saveGame();
+
+            } else if (player.carrying && player.box) {
+                // --- AÇÃO: Colocar produto na prateleira (clicou em espaço VAZIO) ---
+                
+                if(player.box.needsPriceSet){
+                    showMessage("Você precisa definir o preço deste produto primeiro!");
+                    triggerTutorial({ tutorialId: 'setPrice', callback: openPriceMenu });
+                    return;
+                }
+                
+                const shelf = clickedShelf;
+                const paddingX = 22.5;
+                const paddingTop = 30;
+                const paddingBottom = 67.5;
+                const startX = shelf.x + paddingX;
+                const startY = shelf.y + paddingTop;
+                const availableWidth = shelf.width - (paddingX * 2);
+                const availableHeight = shelf.height - paddingTop - paddingBottom;
+                const productsPerRow = shelf.isSpecial ? GAME_CONFIG.PRODUCTS_PER_ROW * 2 : GAME_CONFIG.PRODUCTS_PER_ROW;
+                const slotWidth = availableWidth / productsPerRow;
+                const baseSlotHeight = availableHeight / GAME_CONFIG.PRODUCTS_PER_COL;
+
+                if (worldX > startX && worldX < startX + availableWidth && worldY > startY && worldY < startY + availableHeight) {
+                    const col = Math.floor((worldX - startX) / slotWidth);
+                    let clickedRow = -1;
+                    let minDistance = Infinity;
+                    for (let row = 0; row < GAME_CONFIG.PRODUCTS_PER_COL; row++) {
+                        const rowCenterY = startY + (row * baseSlotHeight) + (baseSlotHeight / 2) + shelf.rowOffsets[row];
+                        const distance = Math.abs(worldY - rowCenterY);
+                        if (distance < minDistance && distance < baseSlotHeight / 2) {
+                            minDistance = distance;
+                            clickedRow = row;
+                        }
+                    }
+
+                    if (clickedRow !== -1) {
+                        const index = clickedRow * productsPerRow + col;
+                        if (index >= 0 && index < shelf.maxProducts && shelf.products[index] === null) {
+                            const productType = player.box.productType;
+                            shelf.products[index] = new Product(productType);
+                            player.box.quantity--;
+                            
+                            score += 10;
+                            updateUI();
+                            if (!allowCustomerSpawn) allowCustomerSpawn = true;
+                            saveGame();
+                            
+                            if (player.box.quantity <= 0) {
+                                player.dropBox();
+                                showMessage("Produto estocado! Caixa vazia.");
+                            } else {
+                                showMessage("");
+                            }
+                            
+                        } // No 'else' needed because we already checked for clicks on existing products.
+                    }
+                }
+            }
+        }
+        
+        function openPriceMenu(productTypeFromClick = null) { 
+            const productType = productTypeFromClick || (player.box ? player.box.productType : null);
+            if (!productType) return;
+            
+            currentPricingProduct = productType; 
+            priceProductImage.src = productType.image; 
+            priceProductName.textContent = productType.name; 
+            priceInput.value = productType.salePrice.toFixed(2);
+            suggestedPriceDisplay.textContent = `Preço Sugerido: R$ ${productType.suggestedPrice.toFixed(2)}`;
+            priceMenu.classList.add('active'); 
+        }
+
+        function openPriceMenuForProduct(productId) {
+            const productType = getProductTypeById(productId);
+            if(productType) {
+                openPriceMenu(productType);
+            }
+        }
+        
+        function closePriceMenu() { 
+            priceMenu.classList.remove('active'); 
+            currentPricingProduct = null; 
+            // Atualiza a lista de produtos comprados ao fechar, caso o preço tenha mudado
+            if (buyMenu.classList.contains('active')) {
+                createPurchasedProductsMenu();
+            }
+        }
+        
+        function confirmPrice() { 
+            if (!currentPricingProduct) return; 
+            const newPrice = parseFloat(priceInput.value); 
+            if (isNaN(newPrice) || newPrice <= 0) { 
+                showMessage("Por favor, insira um preço válido!"); 
+                return; 
+            } 
+            currentPricingProduct.salePrice = newPrice; 
+            
+            if (player.box && player.box.productType.id === currentPricingProduct.id) {
+                player.box.needsPriceSet = false;
+            }
+            
+            closePriceMenu();
+            showMessage("Preço atualizado!");
+            saveGame();
+        }
+        
+        function openBuyMenu() { 
+            createProductsMenu(); // Recria o menu de compra para refletir a pontuação atual
+            createPurchasedProductsMenu(); // Cria o menu de produtos já comprados
+            buyMenu.classList.add('active'); 
+            updateUI(); 
+        }
+        
+        function closeBuyMenu() { 
+            buyMenu.classList.remove('active'); 
+        }
+        
+        function buyNewShelf() { 
+            if (money >= GAME_CONFIG.SHELF_PRICE) { 
+                money -= GAME_CONFIG.SHELF_PRICE; 
+                const newShelf = new Shelf(75, 75, false); // false indica que é uma prateleira normal
+                shelves.push(newShelf); 
+                showMessage("Nova prateleira comprada!"); 
+                updateUI();
+                saveGame();
+            } else { 
+                showMessage("Dinheiro insuficiente!"); 
+            } 
+        }
+        
+        function buySpecialShelf() { 
+            if (money >= SPECIAL_SHELF_PRICE) { 
+                money -= SPECIAL_SHELF_PRICE; 
+                const newShelf = new Shelf(75, 75, true); // true indica que é uma prateleira especial
+                shelves.push(newShelf); 
+                showMessage("Prateleira de limpeza comprada!"); 
+                updateUI();
+                saveGame();
+            } else { 
+                showMessage("Dinheiro insuficiente!"); 
+            } 
+        }
+
+        function hireBot() {
+            if (money >= GAME_CONFIG.BOT_HIRE_COST && !botHired) {
+                money -= GAME_CONFIG.BOT_HIRE_COST;
+                botHired = true;
+                bot = new Bot();
+                showMessage("Funcionário contratado!");
+                updateUI();
+                saveGame();
+            } else if (botHired) {
+                showMessage("Você já tem um funcionário.");
+            } else {
+                showMessage("Dinheiro insuficiente!");
+            }
+        }
+
+        function buyNewFreezer() {
+            if (money >= GAME_CONFIG.FREEZER_PRICE) {
+                money -= GAME_CONFIG.FREEZER_PRICE;
+                const newFreezer = new Freezer(75, 200);
+                freezers.push(newFreezer);
+                showMessage("Freezer comprado! Posicione onde quiser.");
+                updateUI();
+                saveGame();
+                closeBuyMenu();
+                openFreezerPriceMenu(newFreezer);
+            } else {
+                showMessage("Dinheiro insuficiente!");
+            }
+        }
+
+        function openFreezerPriceMenu(freezer) {
+            if (!freezer) return;
+            editingFreezer = freezer;
+            freezerProductsGrid.innerHTML = '';
+            freezer.products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'freezer-product-card';
+                card.innerHTML = `
+                    <img class="freezer-product-image" src="${product.image}" alt="${product.name}">
+                    <div class="freezer-product-name">${product.name}</div>
+                    <div class="freezer-price-input-group">
+                        <label class="price-label">R$</label>
+                        <input type="number" class="price-input freezer-price-input" data-product-id="${product.id}" value="${product.salePrice.toFixed(2)}" min="0.01" step="0.01">
+                    </div>
+                `;
+                freezerProductsGrid.appendChild(card);
+            });
+            freezerPriceMenu.classList.add('active');
+        }
+
+        function closeFreezerPriceMenu() {
+            freezerPriceMenu.classList.remove('active');
+            editingFreezer = null;
+        }
+
+        function confirmFreezerPrices() {
+            if (!editingFreezer) return;
+            const inputs = freezerProductsGrid.querySelectorAll('.freezer-price-input');
+            inputs.forEach(input => {
+                const productId = input.dataset.productId;
+                const newPrice = parseFloat(input.value);
+                const product = editingFreezer.products.find(p => p.id === productId);
+                if (product && !isNaN(newPrice) && newPrice > 0) {
+                    product.salePrice = newPrice;
+                }
+            });
+            showMessage("Preços do freezer atualizados!");
+            saveGame();
+            closeFreezerPriceMenu();
+        }
+        
+        function setupJoystick() { 
+            const base = document.querySelector('.joystick-base'), 
+                  stick = document.getElementById('joystickStick'), 
+                  container = document.querySelector('.joystick-container'); 
+            let centerX, centerY, radius; 
+            
+            function updateDims() { 
+                const rect = container.getBoundingClientRect(); 
+                centerX = rect.left + rect.width / 2; 
+                centerY = rect.top + rect.height / 2; 
+                radius = rect.width / 2; 
+            } 
+            
+            function handleStart(e) { 
+                updateDims(); 
+                joystickActive = true; 
+                updatePos(e); 
+            } 
+            
+            function handleMove(e) { 
+                if (!joystickActive) 
+                    return; 
+                updatePos(e); 
+            } 
+            
+            function handleEnd() { 
+                joystickActive = false; 
+                joystickVector = { x: 0, y: 0 }; 
+                stick.style.transform = `translate(0px, 0px)`; 
+            } 
+            
+            function updatePos(e) { 
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX; 
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY; 
+                const dX = clientX - centerX, dY = clientY - centerY; 
+                const dist = Math.min(radius, Math.sqrt(dX*dX + dY*dY)); 
+                const angle = Math.atan2(dY, dX); 
+                const stickX = Math.cos(angle) * dist, stickY = Math.sin(angle) * dist; 
+                stick.style.transform = `translate(${stickX}px, ${stickY}px)`; 
+                joystickVector = { x: stickX / radius, y: stickY / radius }; 
+            } 
+            
+            base.addEventListener('mousedown', handleStart); 
+            document.addEventListener('mousemove', handleMove); 
+            document.addEventListener('mouseup', handleEnd); 
+            base.addEventListener('touchstart', handleStart); 
+            document.addEventListener('touchmove', handleMove); 
+            document.addEventListener('touchend', handleEnd); 
+            window.addEventListener('resize', updateDims); 
+        }
+        
+        function setupObjectDragging() { 
+            let dragStartX = 0, dragStartY = 0; 
+            
+            function handleStart(e) { 
+                if (!gameRunning) return; 
+                const rect = canvas.getBoundingClientRect(); 
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX; 
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY; 
+                const worldX = (clientX - rect.left) / GAME_CONFIG.GAME_SCALE + camera.x;
+                const worldY = (clientY - rect.top) / GAME_CONFIG.GAME_SCALE + camera.y;
+
+                for (const shelf of shelves) { 
+                    if (worldX >= shelf.x && worldX <= shelf.x + shelf.width && worldY >= shelf.y && worldY <= shelf.y + shelf.height) { 
+                        isDraggingShelf = true; 
+                        draggingShelf = shelf; 
+                        dragStartX = worldX - shelf.x; 
+                        dragStartY = worldY - shelf.y; 
+                        return; 
+                    } 
+                }
+
+                for (const freezer of freezers) {
+                     if (worldX >= freezer.x && worldX <= freezer.x + freezer.width && worldY >= freezer.y && worldY <= freezer.y + freezer.height) { 
+                        isDraggingShelf = true;
+                        draggingShelf = freezer;
+                        dragStartX = worldX - freezer.x;
+                        dragStartY = worldY - freezer.y;
+                        return;
+                    }
+                }
+
+                if (worldX >= computerArea.x && worldX <= computerArea.x + computerArea.width && worldY >= computerArea.y && worldY <= computerArea.y + computerArea.height) {
+                    isDraggingShelf = true;
+                    draggingShelf = computerArea;
+                    dragStartX = worldX - computerArea.x;
+                    dragStartY = worldY - computerArea.y;
+                    return;
+                }
+
+                if (worldX >= counter.x && worldX <= counter.x + counter.width && worldY >= counter.y && worldY <= counter.y + counter.height) {
+                    isDraggingShelf = true;
+                    draggingShelf = counter;
+                    dragStartX = worldX - counter.x;
+                    dragStartY = worldY - counter.y;
+                    return;
+                }
+            } 
+            
+            function handleMove(e) { 
+                if (!isDraggingShelf || !draggingShelf) return; 
+                const rect = canvas.getBoundingClientRect(); 
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX; 
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY; 
+                const worldX = (clientX - rect.left) / GAME_CONFIG.GAME_SCALE + camera.x;
+                const worldY = (clientY - rect.top) / GAME_CONFIG.GAME_SCALE + camera.y;
+                draggingShelf.x = worldX - dragStartX; 
+                draggingShelf.y = worldY - dragStartY; 
+                draggingShelf.x = Math.max(0, Math.min(draggingShelf.x, GAME_CONFIG.WORLD_WIDTH - draggingShelf.width)); 
+                draggingShelf.y = Math.max(0, Math.min(draggingShelf.y, GAME_CONFIG.WORLD_HEIGHT - draggingShelf.height)); 
+            } 
+            
+            function handleEnd() { 
+                if (isDraggingShelf) { 
+                    isDraggingShelf = false; 
+                    draggingShelf = null; 
+                    saveGame();
+                } 
+            } 
+            
+            canvas.addEventListener('mousedown', handleStart); 
+            canvas.addEventListener('mousemove', handleMove); 
+            canvas.addEventListener('mouseup', handleEnd); 
+            canvas.addEventListener('touchstart', handleStart); 
+            canvas.addEventListener('touchmove', handleMove); 
+            canvas.addEventListener('touchend', handleEnd); 
+        }
+        
+        function toggleMarketState() { 
+            isMarketOpen = !isMarketOpen; 
+            if (isMarketOpen) { 
+                toggleMarketButtonImage.src = MARKET_CLOSE_IMG;
+                showMessage("O mercado está aberto!"); 
+            } else { 
+                toggleMarketButtonImage.src = MARKET_OPEN_IMG;
+                showMessage("O mercado está fechado!"); 
+            } 
+            saveGame();
+        }
+
+        // --- Funções de Tutorial ---
+        function showTutorial(text, tutorialId, imageUrl, onCloseCallback) {
+            tutorialText.innerHTML = text;
+            
+            if (imageUrl) {
+                tutorialImage.src = imageUrl;
+                tutorialImageContainer.style.display = 'block';
+            } else {
+                tutorialImageContainer.style.display = 'none';
+            }
+
+            tutorialOverlay.style.display = 'flex';
+            closeTutorialButton.onclick = () => hideTutorial(tutorialId, onCloseCallback);
+        }
+
+        function hideTutorial(tutorialId, onCloseCallback) {
+            tutorialOverlay.style.display = 'none';
+            if (tutorialId) {
+                tutorialState[tutorialId] = true;
+                saveGame();
+            }
+            if (onCloseCallback) {
+                onCloseCallback();
+            }
+        }
+
+        function triggerTutorial({ tutorialId, imageUrl, callback }) {
+            if (gameRunning && !tutorialState[tutorialId]) {
+                const tutorialMessages = {
+                    welcome: "Bem-vindo! Use o joystick no canto inferior esquerdo para se mover.",
+                    buyProducts: "Aproxime-se do computador e pressione o botão de carrinho para comprar produtos.",
+                    pickupBox: "Suas compras chegaram! Aproxime-se de uma caixa e pressione o botão de mão para pegá-la.",
+                    setPrice: "Produto novo! Defina um preço de venda. Clientes não comprarão se o preço for muito alto!",
+                    placeProduct: "Com a caixa em mãos, aproxime-se de uma prateleira e <b>toque em um espaço vazio</b> nela para estocar o produto."
+                };
+                showTutorial(tutorialMessages[tutorialId], tutorialId, imageUrl, callback);
+            } else if (callback) {
+                callback();
+            }
+        }
+        
+        // --- Funções do Menu de Ajustes ---
+        function populateRowSelector() {
+            rowSelector.innerHTML = ''; // Limpa os elementos existentes
+            for (let i = 0; i < GAME_CONFIG.PRODUCTS_PER_COL; i++) {
+                const input = document.createElement('input');
+                input.type = 'radio';
+                input.id = `row${i}`;
+                input.name = 'shelfRow';
+                input.value = i;
+                if (i === selectedShelfRow) {
+                    input.checked = true;
+                }
+
+                const label = document.createElement('label');
+                label.htmlFor = `row${i}`;
+                label.textContent = `Linha ${i + 1}`;
+
+                input.addEventListener('change', handleRowSelect);
+                rowSelector.appendChild(input);
+                rowSelector.appendChild(label);
+            }
+        }
+
+        function handleRowSelect(event) {
+            if (!editingShelf) return;
+            selectedShelfRow = parseInt(event.target.value);
+            rowOffsetSlider.value = editingShelf.rowOffsets[selectedShelfRow];
+            sliderValue.textContent = `Valor: ${rowOffsetSlider.value}`;
+        }
+
+        function handleSliderChange(event) {
+            if (!editingShelf) return;
+            const value = parseInt(event.target.value);
+            editingShelf.rowOffsets[selectedShelfRow] = value;
+            sliderValue.textContent = `Valor: ${value}`;
+        }
+
+        function handleWidthSliderChange(event) {
+            if (!editingShelf || !editingShelf.isSpecial) return;
+            const value = parseInt(event.target.value);
+            editingShelf.width = value;
+            widthSliderValue.textContent = `Largura: ${value}`;
+        }
+
+        function handleHeightSliderChange(event) {
+            if (!editingShelf || !editingShelf.isSpecial) return;
+            const value = parseInt(event.target.value);
+            editingShelf.height = value;
+            heightSliderValue.textContent = `Altura: ${value}`;
+        }
+
+        function openSettingsMenu() {
+            let closestShelf = null;
+            let minDistance = Infinity;
+            shelves.forEach(shelf => {
+                const distance = Math.sqrt(Math.pow(player.x - (shelf.x + shelf.width / 2), 2) + Math.pow(player.y - (shelf.y + shelf.height / 2), 2));
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestShelf = shelf;
+                }
+            });
+
+            if (!closestShelf) {
+                showMessage("Aproxime-se de uma prateleira para ajustar!");
+                return;
+            }
+            editingShelf = closestShelf;
+
+            // Size adjustment is removed as special shelf now has fixed size
+            sizeAdjustmentContainer.style.display = 'none';
+
+            settingsMenu.classList.add('active');
+            isSettingsMode = true;
+            gameRunning = false;
+            populateRowSelector();
+            handleRowSelect({ target: { value: selectedShelfRow } });
+        }
+
+        function closeSettingsMenu() {
+            settingsMenu.classList.remove('active');
+            isSettingsMode = false;
+            gameRunning = true;
+            lastTime = performance.now();
+            saveGame();
+            editingShelf = null;
+        }
+
+        actionButton.addEventListener('click', () => gameRunning && interact());
+        buyButton.addEventListener('click', () => gameRunning && openBuyMenu());
+        toggleMarketButton.addEventListener('click', () => gameRunning && toggleMarketState());
+        
+        closeMenuButton.addEventListener('click', closeBuyMenu);
+        closePriceMenuButton.addEventListener('click', closePriceMenu);
+        confirmPriceButton.addEventListener('click', confirmPrice);
+        cancelPriceButton.addEventListener('click', closePriceMenu);
+        buyShelfButton.addEventListener('click', buyNewShelf);
+        buySpecialShelfButton.addEventListener('click', buySpecialShelf);
+        hireBotButton.addEventListener('click', hireBot);
+
+        // Listeners do Freezer
+        buyFreezerButton.addEventListener('click', buyNewFreezer);
+        closeFreezerPriceMenuButton.addEventListener('click', closeFreezerPriceMenu);
+        confirmFreezerPricesButton.addEventListener('click', confirmFreezerPrices);
+
+        // Listeners para o Menu de Ajustes
+        settingsButton.addEventListener('click', openSettingsMenu);
+        closeSettingsMenuButton.addEventListener('click', closeSettingsMenu);
+        rowOffsetSlider.addEventListener('input', handleSliderChange);
+        shelfWidthSlider.addEventListener('input', handleWidthSliderChange);
+        shelfHeightSlider.addEventListener('input', handleHeightSliderChange);
+        
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(function() {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        function startGame(isContinue) { 
+            startScreen.style.display = 'none'; 
+
+            if (isContinue) { 
+                if (!loadGame()) 
+                    setupNewGame(); 
+            } else { 
+                setupNewGame(); 
+            } 
+            
+            // Entrar em modo tela cheia automaticamente
+            enterFullscreen();
+            
+            gameRunning = true; 
+            lastTime = performance.now(); 
+            requestAnimationFrame(gameLoop); 
+            showMessage("Jogo iniciado! Boa sorte!"); 
+            setTimeout(() => triggerTutorial({ tutorialId: 'welcome' }), 500);
+        }
+
+        // Event listeners para os botões da tela de início
+        continueButton.addEventListener('click', function() {
+            showNotification('Carregando jogo salvo...');
+            setTimeout(function() {
+                startGame(true);
+            }, 1500);
+        });
+        
+        newGameButton.addEventListener('click', function() {
+            showNotification('Iniciando novo jogo...');
+            setTimeout(function() {
+                localStorage.removeItem('supermercadoRPGSave');
+                startGame(false);
+            }, 1500);
+        });
+
+        window.addEventListener('load', () => {
+            resizeCanvas(); 
+            setupJoystick(); 
+            setupObjectDragging(); 
+            canvas.addEventListener('click', handleCanvasClick);
+            initImages();
+        });
+        
+        window.addEventListener('resize', resizeCanvas);
+    </script>
+
+<!-- PWA Service Worker Registration -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(registration => {
+          console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        })
+        .catch(err => {
+          console.log('ServiceWorker registration failed: ', err);
+        });
+    });
+  }
+</script>
+</body>
+</html>
